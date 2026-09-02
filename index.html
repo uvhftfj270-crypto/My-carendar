@@ -1,224 +1,463 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>My Calendar</title>
 
+
   <style>
+
     body {
+
       font-family: sans-serif;
+
       margin: 0;
+
       padding: 20px;
+
       text-align: center;
+
     }
+
 
     h1 {
+
       margin-bottom: 10px;
+
     }
+
 
     .calendar {
+
       max-width: 500px;
+
       margin: auto;
+
     }
+
+
+    /* =========================
+       月
+       ========================= */
 
     .month {
+
       display: flex;
+
       justify-content: space-between;
+
       align-items: center;
+
       margin-bottom: 10px;
+
     }
+
 
     .month button {
+
       font-size: 20px;
+
       padding: 5px 15px;
+
     }
+
+
+    /* =========================
+       カレンダー
+       ========================= */
 
     .week {
+
       display: grid;
+
       grid-template-columns: repeat(7, 1fr);
+
     }
+
 
     .day {
+
       border: 1px solid #ddd;
+
       min-height: 75px;
+
       padding: 8px 2px;
+
       box-sizing: border-box;
+
       cursor: pointer;
+
     }
+
 
     .day:hover {
+
       background: #f5f5f5;
+
     }
+
 
     .header {
+
       font-weight: bold;
+
       background: #f5f5f5;
+
       min-height: auto;
+
       cursor: default;
+
     }
+
 
     .today {
+
       background: #dff5df;
+
       font-weight: bold;
+
     }
+
 
     .date-number {
+
       font-size: 18px;
+
     }
+
 
     .event {
+
       margin-top: 5px;
+
       font-size: 12px;
+
       background: #e8e8ff;
+
       padding: 4px;
+
       border-radius: 4px;
+
       word-break: break-word;
+
     }
+
 
     .stars {
+
       display: block;
+
       font-size: 12px;
+
       margin-top: 2px;
+
     }
 
-    /* モーダル */
+
+    /* =========================
+       モーダル
+       ========================= */
 
     .modal {
+
       display: none;
+
       position: fixed;
+
       z-index: 1000;
+
       left: 0;
+
       top: 0;
+
       width: 100%;
+
       height: 100%;
+
       background: rgba(0, 0, 0, 0.4);
+
     }
+
 
     .modal-content {
+
       background: white;
+
       width: 85%;
+
       max-width: 400px;
+
       margin: 10% auto;
+
       padding: 20px;
+
       border-radius: 12px;
+
       box-sizing: border-box;
+
       text-align: left;
+
       max-height: 80vh;
+
       overflow-y: auto;
+
     }
+
 
     .modal-content h2 {
+
       margin-top: 0;
+
       text-align: center;
+
     }
+
 
     .event-list {
+
       margin-bottom: 15px;
+
     }
+
 
     .event-item {
+
       margin-bottom: 10px;
+
       padding: 10px;
+
       background: #f5f5f5;
+
       border-radius: 6px;
+
     }
+
 
     .event-name {
+
       font-size: 16px;
+
       font-weight: bold;
+
       word-break: break-word;
+
     }
+
 
     .event-info {
+
       font-size: 13px;
+
       margin-top: 4px;
+
     }
+
 
     .event-item button {
+
       padding: 5px 8px;
+
       font-size: 12px;
+
       margin-top: 8px;
+
       margin-right: 5px;
+
     }
 
+
+    /* =========================
+       予定追加
+       ========================= */
+
     .add-area {
+
       margin-top: 15px;
+
     }
+
 
     .add-area input,
     .add-area select {
+
       width: 100%;
+
       padding: 9px;
+
       font-size: 16px;
+
       box-sizing: border-box;
+
       margin-bottom: 8px;
+
     }
+
 
     .add-area button {
+
       width: 100%;
+
       padding: 10px;
+
       font-size: 16px;
+
     }
+
 
     .star-select {
+
       font-size: 22px;
+
       text-align: center;
+
     }
 
+
+    /* =========================
+       ボタン
+       ========================= */
+
     .close-button {
+
       width: 100%;
+
       margin-top: 15px;
+
       padding: 10px;
+
       font-size: 16px;
+
     }
+
+
+    .notification-button {
+
+      width: 100%;
+
+      margin-top: 10px;
+
+      padding: 10px;
+
+      font-size: 16px;
+
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
+
   <h1>My Calendar</h1>
+
 
   <div class="calendar">
 
+
+    <!-- 月変更 -->
+
     <div class="month">
-      <button onclick="changeMonth(-1)">◀</button>
+
+      <button
+        type="button"
+        onclick="changeMonth(-1)"
+      >
+        ◀
+      </button>
+
 
       <h2 id="monthTitle"></h2>
 
-      <button onclick="changeMonth(1)">▶</button>
+
+      <button
+        type="button"
+        onclick="changeMonth(1)"
+      >
+        ▶
+      </button>
+
     </div>
+
+
+    <!-- 曜日 -->
 
     <div class="week">
+
       <div class="day header">日</div>
+
       <div class="day header">月</div>
+
       <div class="day header">火</div>
+
       <div class="day header">水</div>
+
       <div class="day header">木</div>
+
       <div class="day header">金</div>
+
       <div class="day header">土</div>
+
     </div>
 
-    <div id="calendarDays" class="week"></div>
+
+    <!-- 日付 -->
+
+    <div
+      id="calendarDays"
+      class="week"
+    ></div>
+
 
   </div>
 
 
-  <!-- 予定モーダル -->
 
-  <div id="eventModal" class="modal">
+  <!-- =========================
+       予定モーダル
+       ========================= -->
 
-    <div class="modal-content">
+  <div
+    id="eventModal"
+    class="modal"
+  >
+
+    <div
+      id="modalContent"
+      class="modal-content"
+    >
+
 
       <h2 id="modalTitle"></h2>
 
-      <div id="eventList" class="event-list"></div>
+
+      <!-- 予定一覧 -->
+
+      <div
+        id="eventList"
+        class="event-list"
+      ></div>
+
 
       <hr>
 
+
+      <!-- 予定追加 -->
+
       <h3>予定を追加</h3>
 
+
       <div class="add-area">
+
 
         <input
           id="eventInput"
@@ -226,48 +465,116 @@
           placeholder="予定名"
         >
 
+
         <input
           id="eventTime"
           type="time"
+          value="12:00"
         >
 
-        <select id="eventPriority" class="star-select">
-          <option value="1">⭐☆☆☆☆</option>
-          <option value="2">⭐⭐☆☆☆</option>
-          <option value="3" selected>⭐⭐⭐☆☆</option>
-          <option value="4">⭐⭐⭐⭐☆</option>
-          <option value="5">⭐⭐⭐⭐⭐</option>
+
+        <select
+          id="eventPriority"
+          class="star-select"
+        >
+
+          <option value="1">
+            ⭐☆☆☆☆
+          </option>
+
+          <option value="2">
+            ⭐⭐☆☆☆
+          </option>
+
+          <option
+            value="3"
+            selected
+          >
+            ⭐⭐⭐☆☆
+          </option>
+
+          <option value="4">
+            ⭐⭐⭐⭐☆
+          </option>
+
+          <option value="5">
+            ⭐⭐⭐⭐⭐
+          </option>
+
         </select>
 
-        <button onclick="addEvent()">追加</button>
+
+        <button
+          type="button"
+          onclick="addEvent()"
+        >
+          追加
+        </button>
+
+
+        <!-- 通知許可 -->
+
+        <button
+          type="button"
+          class="notification-button"
+          onclick="requestNotificationPermission()"
+        >
+          🔔 通知を許可する
+        </button>
+
+
+        <!-- 通知テスト -->
+
+        <button
+          type="button"
+          class="notification-button"
+          onclick="testNotification()"
+        >
+          🔔 通知テスト
+        </button>
+
 
       </div>
 
+
+      <!-- 閉じる -->
+
       <button
+        id="closeModalButton"
+        type="button"
         class="close-button"
         onclick="closeModal()"
       >
         閉じる
       </button>
 
+
     </div>
 
   </div>
 
 
+
   <script>
 
+
+    /* =========================
+       基本データ
+       ========================= */
+
     let currentDate = new Date();
+
     let selectedDate = null;
 
+
     /*
-      予定データ
+      データ形式
 
       {
         "2026-09-10": [
           {
             name: "歯医者",
-            time: "15:00",
+            time: "18:18",
             priority: 5,
             reminders: []
           }
@@ -275,257 +582,590 @@
       }
     */
 
-    let events =
-      JSON.parse(localStorage.getItem("myCalendarEvents")) || {};
+
+    let events = {};
 
 
-    // =================================
-    // リマインド設定
-    // =================================
+    try {
+
+      events =
+        JSON.parse(
+          localStorage.getItem(
+            "myCalendarEvents"
+          )
+        ) || {};
+
+    } catch (error) {
+
+      events = {};
+
+    }
+
+
+
+    /* =========================
+       リマインド設定
+       =========================
+
+       ⭐
+       → 5分前
+
+       ⭐⭐
+       → 1時間前
+       → 5分前
+
+       ⭐⭐⭐
+       → 1日前
+       → 1時間前
+       → 5分前
+
+       ⭐⭐⭐⭐
+       → 3日前
+       → 1日前
+       → 1時間前
+       → 5分前
+
+       ⭐⭐⭐⭐⭐
+       → 1週間前
+       → 3日前
+       → 1日前
+       → 1時間前
+       → 5分前
+
+    */
+
 
     const reminderTimes = {
 
+
       1: [
+
         5 * 60 * 1000
+
       ],
+
 
       2: [
+
         60 * 60 * 1000,
+
         5 * 60 * 1000
+
       ],
+
 
       3: [
+
         24 * 60 * 60 * 1000,
+
         60 * 60 * 1000,
+
         5 * 60 * 1000
+
       ],
+
 
       4: [
+
         3 * 24 * 60 * 60 * 1000,
+
         24 * 60 * 60 * 1000,
+
         60 * 60 * 1000,
+
         5 * 60 * 1000
+
       ],
 
+
       5: [
+
         7 * 24 * 60 * 60 * 1000,
+
         3 * 24 * 60 * 60 * 1000,
+
         24 * 60 * 60 * 1000,
+
         60 * 60 * 1000,
+
         5 * 60 * 1000
+
       ]
 
     };
 
 
-    // =================================
-    // 古いデータとの互換処理
-    // =================================
 
-    for (const dateKey in events) {
+    /* =========================
+       古いデータとの互換処理
+       ========================= */
 
-      if (!Array.isArray(events[dateKey])) {
+    for (
+      const dateKey in events
+    ) {
+
+
+      if (
+        !Array.isArray(events[dateKey])
+      ) {
 
         events[dateKey] = [
+
           {
             name: events[dateKey],
+
             time: "12:00",
+
             priority: 3,
+
             reminders: []
+
           }
+
         ];
 
       }
 
+
       events[dateKey] =
-        events[dateKey].map(function(event) {
+        events[dateKey].map(
+          function(event) {
 
-          if (typeof event === "string") {
 
-            return {
-              name: event,
-              time: "12:00",
-              priority: 3,
-              reminders: []
-            };
+            if (
+              typeof event === "string"
+            ) {
+
+              return {
+
+                name: event,
+
+                time: "12:00",
+
+                priority: 3,
+
+                reminders: []
+
+              };
+
+            }
+
+
+            if (!event.name) {
+
+              event.name = "予定";
+
+            }
+
+
+            if (!event.time) {
+
+              event.time = "12:00";
+
+            }
+
+
+            if (
+              !event.priority ||
+              event.priority < 1 ||
+              event.priority > 5
+            ) {
+
+              event.priority = 3;
+
+            }
+
+
+            if (
+              !Array.isArray(
+                event.reminders
+              )
+            ) {
+
+              event.reminders = [];
+
+            }
+
+
+            return event;
 
           }
-
-          if (!event.reminders) {
-            event.reminders = [];
-          }
-
-          return event;
-
-        });
+        );
 
     }
 
 
-    // =================================
-    // カレンダー作成
-    // =================================
+
+    /* =========================
+       カレンダー作成
+       ========================= */
 
     function createCalendar() {
 
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
 
-      document.getElementById("monthTitle").textContent =
-        year + "年 " + (month + 1) + "月";
+      const year =
+        currentDate.getFullYear();
+
+
+      const month =
+        currentDate.getMonth();
+
+
+      document
+        .getElementById("monthTitle")
+        .textContent =
+        year +
+        "年 " +
+        (month + 1) +
+        "月";
+
 
       const firstDay =
-        new Date(year, month, 1).getDay();
+        new Date(
+          year,
+          month,
+          1
+        ).getDay();
+
 
       const lastDate =
-        new Date(year, month + 1, 0).getDate();
+        new Date(
+          year,
+          month + 1,
+          0
+        ).getDate();
+
 
       const calendarDays =
-        document.getElementById("calendarDays");
+        document.getElementById(
+          "calendarDays"
+        );
+
 
       calendarDays.innerHTML = "";
 
 
-      // 空白
 
-      for (let i = 0; i < firstDay; i++) {
+      /* 空白 */
+
+      for (
+        let i = 0;
+        i < firstDay;
+        i++
+      ) {
 
         const empty =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
 
-        empty.className = "day";
+        empty.className =
+          "day";
 
-        calendarDays.appendChild(empty);
+        calendarDays.appendChild(
+          empty
+        );
 
       }
 
 
-      // 日付
 
-      for (let day = 1; day <= lastDate; day++) {
+      /* 日付 */
+
+      for (
+        let day = 1;
+        day <= lastDate;
+        day++
+      ) {
+
 
         const cell =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
 
-        cell.className = "day";
+
+        cell.className =
+          "day";
 
 
-        const today = new Date();
+        /* 今日 */
+
+        const today =
+          new Date();
+
 
         if (
+
           day === today.getDate() &&
+
           month === today.getMonth() &&
+
           year === today.getFullYear()
+
         ) {
 
-          cell.classList.add("today");
+          cell.classList.add(
+            "today"
+          );
 
         }
 
 
+
+        /* 日付番号 */
+
         const dateNumber =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
 
-        dateNumber.className = "date-number";
 
-        dateNumber.textContent = day;
+        dateNumber.className =
+          "date-number";
 
-        cell.appendChild(dateNumber);
 
+        dateNumber.textContent =
+          day;
+
+
+        cell.appendChild(
+          dateNumber
+        );
+
+
+
+        /* 日付ID */
 
         const dateKey =
-          year + "-" +
-          String(month + 1).padStart(2, "0") + "-" +
-          String(day).padStart(2, "0");
+          year +
+          "-" +
+          String(
+            month + 1
+          ).padStart(2, "0") +
+          "-" +
+          String(day).padStart(
+            2,
+            "0"
+          );
 
 
-        // 予定表示
+
+        /* 予定 */
 
         if (events[dateKey]) {
 
-          events[dateKey].forEach(function(eventData) {
 
-            const event =
-              document.createElement("div");
+          events[dateKey].forEach(
+            function(eventData) {
 
-            event.className = "event";
 
-            event.textContent =
-              eventData.name;
+              const event =
+                document.createElement(
+                  "div"
+                );
 
-            const stars =
-              document.createElement("span");
 
-            stars.className = "stars";
+              event.className =
+                "event";
 
-            stars.textContent =
-              "⭐".repeat(eventData.priority) +
-              "☆".repeat(5 - eventData.priority);
 
-            event.appendChild(stars);
+              event.textContent =
+                eventData.name;
 
-            cell.appendChild(event);
 
-          });
+
+              /* 星 */
+
+              const stars =
+                document.createElement(
+                  "span"
+                );
+
+
+              stars.className =
+                "stars";
+
+
+              stars.textContent =
+                "⭐".repeat(
+                  eventData.priority
+                ) +
+                "☆".repeat(
+                  5 -
+                  eventData.priority
+                );
+
+
+              event.appendChild(
+                stars
+              );
+
+
+              cell.appendChild(
+                event
+              );
+
+            }
+          );
 
         }
 
 
-        cell.onclick = function() {
 
-          openModal(dateKey);
+        /* 日付タップ */
 
-        };
+        cell.onclick =
+          function() {
+
+            openModal(
+              dateKey
+            );
+
+          };
 
 
-        calendarDays.appendChild(cell);
+        calendarDays.appendChild(
+          cell
+        );
 
       }
 
     }
 
 
-    // =================================
-    // モーダル
-    // =================================
+
+    /* =========================
+       モーダルを開く
+       ========================= */
 
     function openModal(dateKey) {
 
-      selectedDate = dateKey;
 
-      document.getElementById("modalTitle").textContent =
-        dateKey + " の予定";
+      selectedDate =
+        dateKey;
 
-      document.getElementById("eventInput").value = "";
 
-      document.getElementById("eventTime").value = "12:00";
+      document
+        .getElementById(
+          "modalTitle"
+        )
+        .textContent =
+        dateKey +
+        " の予定";
 
-      document.getElementById("eventPriority").value = "3";
+
+      document
+        .getElementById(
+          "eventInput"
+        )
+        .value =
+        "";
+
+
+      document
+        .getElementById(
+          "eventTime"
+        )
+        .value =
+        "12:00";
+
+
+      document
+        .getElementById(
+          "eventPriority"
+        )
+        .value =
+        "3";
+
 
       updateEventList();
 
-      document.getElementById("eventModal").style.display =
+
+      document
+        .getElementById(
+          "eventModal"
+        )
+        .style.display =
         "block";
 
     }
 
 
-    // =================================
-    // 予定一覧
-    // =================================
+
+    /* =========================
+       ★ モーダルを閉じる
+       ========================= */
+
+    function closeModal() {
+
+
+      const modal =
+        document.getElementById(
+          "eventModal"
+        );
+
+
+      modal.style.display =
+        "none";
+
+
+      selectedDate =
+        null;
+
+    }
+
+
+
+    /* =========================
+       モーダル外側をタップ
+       ========================= */
+
+    document
+      .getElementById(
+        "eventModal"
+      )
+      .addEventListener(
+        "click",
+        function(event) {
+
+
+          if (
+            event.target === this
+          ) {
+
+            closeModal();
+
+          }
+
+        }
+      );
+
+
+
+    /* =========================
+       予定一覧
+       ========================= */
 
     function updateEventList() {
 
+
       const list =
-        document.getElementById("eventList");
+        document.getElementById(
+          "eventList"
+        );
+
 
       list.innerHTML = "";
+
 
       const todayEvents =
         events[selectedDate] || [];
 
 
-      if (todayEvents.length === 0) {
+      if (
+        todayEvents.length === 0
+      ) {
 
         list.textContent =
           "予定はありません。";
@@ -535,162 +1175,279 @@
       }
 
 
-      todayEvents.forEach(function(eventData, index) {
 
-        const item =
-          document.createElement("div");
-
-        item.className = "event-item";
-
-
-        const name =
-          document.createElement("div");
-
-        name.className = "event-name";
-
-        name.textContent =
-          eventData.name;
+      todayEvents.forEach(
+        function(
+          eventData,
+          index
+        ) {
 
 
-        const info =
-          document.createElement("div");
-
-        info.className = "event-info";
-
-        info.textContent =
-          "⏰ " + eventData.time +
-          "　" +
-          "⭐".repeat(eventData.priority) +
-          "☆".repeat(5 - eventData.priority);
+          const item =
+            document.createElement(
+              "div"
+            );
 
 
-        item.appendChild(name);
-
-        item.appendChild(info);
-
-
-        // 編集
-
-        const editButton =
-          document.createElement("button");
-
-        editButton.textContent = "編集";
-
-        editButton.onclick = function() {
-
-          editEvent(index);
-
-        };
+          item.className =
+            "event-item";
 
 
-        // 削除
 
-        const deleteButton =
-          document.createElement("button");
+          /* 名前 */
 
-        deleteButton.textContent = "削除";
-
-        deleteButton.onclick = function() {
-
-          deleteEvent(index);
-
-        };
+          const name =
+            document.createElement(
+              "div"
+            );
 
 
-        item.appendChild(editButton);
+          name.className =
+            "event-name";
 
-        item.appendChild(deleteButton);
 
-        list.appendChild(item);
+          name.textContent =
+            eventData.name;
 
-      });
+
+
+          /* 時刻・重要度 */
+
+          const info =
+            document.createElement(
+              "div"
+            );
+
+
+          info.className =
+            "event-info";
+
+
+          info.textContent =
+            "⏰ " +
+            eventData.time +
+            "　" +
+            "⭐".repeat(
+              eventData.priority
+            ) +
+            "☆".repeat(
+              5 -
+              eventData.priority
+            );
+
+
+
+          item.appendChild(
+            name
+          );
+
+
+          item.appendChild(
+            info
+          );
+
+
+
+          /* 編集 */
+
+          const editButton =
+            document.createElement(
+              "button"
+            );
+
+
+          editButton.type =
+            "button";
+
+
+          editButton.textContent =
+            "編集";
+
+
+          editButton.onclick =
+            function() {
+
+              editEvent(
+                index
+              );
+
+            };
+
+
+
+          /* 削除 */
+
+          const deleteButton =
+            document.createElement(
+              "button"
+            );
+
+
+          deleteButton.type =
+            "button";
+
+
+          deleteButton.textContent =
+            "削除";
+
+
+          deleteButton.onclick =
+            function() {
+
+              deleteEvent(
+                index
+              );
+
+            };
+
+
+
+          item.appendChild(
+            editButton
+          );
+
+
+          item.appendChild(
+            deleteButton
+          );
+
+
+          list.appendChild(
+            item
+          );
+
+        }
+      );
 
     }
 
 
-    // =================================
-    // 予定追加
-    // =================================
+
+    /* =========================
+       予定追加
+       ========================= */
 
     function addEvent() {
 
+
       const nameInput =
-        document.getElementById("eventInput");
+        document.getElementById(
+          "eventInput"
+        );
+
 
       const timeInput =
-        document.getElementById("eventTime");
+        document.getElementById(
+          "eventTime"
+        );
+
 
       const priorityInput =
-        document.getElementById("eventPriority");
+        document.getElementById(
+          "eventPriority"
+        );
 
 
       const eventName =
         nameInput.value.trim();
 
+
       const eventTime =
         timeInput.value;
 
+
       const priority =
-        Number(priorityInput.value);
+        Number(
+          priorityInput.value
+        );
 
 
-      if (eventName === "") {
 
-        alert("予定名を入力してください。");
+      if (
+        eventName === ""
+      ) {
 
-        return;
-
-      }
-
-
-      if (!eventTime) {
-
-        alert("予定時刻を入力してください。");
+        alert(
+          "予定名を入力してください。"
+        );
 
         return;
 
       }
 
 
-      if (!events[selectedDate]) {
 
-        events[selectedDate] = [];
+      if (
+        !eventTime
+      ) {
+
+        alert(
+          "予定時刻を入力してください。"
+        );
+
+        return;
 
       }
+
+
+
+      if (
+        !events[selectedDate]
+      ) {
+
+        events[selectedDate] =
+          [];
+
+      }
+
 
 
       events[selectedDate].push({
 
-        name: eventName,
+        name:
+          eventName,
 
-        time: eventTime,
+        time:
+          eventTime,
 
-        priority: priority,
+        priority:
+          priority,
 
-        reminders: []
+        reminders:
+          []
 
       });
 
 
+
       saveEvents();
 
-      nameInput.value = "";
+
+      nameInput.value =
+        "";
+
 
       updateEventList();
+
 
       createCalendar();
 
     }
 
 
-    // =================================
-    // 編集
-    // =================================
+
+    /* =========================
+       編集
+       ========================= */
 
     function editEvent(index) {
 
+
       const eventData =
-        events[selectedDate][index];
+        events[selectedDate][
+          index
+        ];
+
 
 
       const newName =
@@ -700,8 +1457,18 @@
         );
 
 
-      if (newName === null ||
-          newName.trim() === "") {
+      if (
+        newName === null
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        newName.trim() === ""
+      ) {
 
         return;
 
@@ -714,26 +1481,33 @@
 
       saveEvents();
 
+
       updateEventList();
+
 
       createCalendar();
 
     }
 
 
-    // =================================
-    // 削除
-    // =================================
+
+    /* =========================
+       削除
+       ========================= */
 
     function deleteEvent(index) {
 
+
       const eventData =
-        events[selectedDate][index];
+        events[selectedDate][
+          index
+        ];
 
 
       const result =
         confirm(
-          "「" + eventData.name +
+          "「" +
+          eventData.name +
           "」を削除しますか？"
         );
 
@@ -745,78 +1519,199 @@
       }
 
 
-      events[selectedDate].splice(index, 1);
+
+      events[selectedDate].splice(
+        index,
+        1
+      );
 
 
-      if (events[selectedDate].length === 0) {
 
-        delete events[selectedDate];
+      if (
+        events[selectedDate].length ===
+        0
+      ) {
+
+        delete events[
+          selectedDate
+        ];
 
       }
+
 
 
       saveEvents();
 
+
       updateEventList();
+
 
       createCalendar();
 
     }
 
 
-    // =================================
-    // 保存
-    // =================================
+
+    /* =========================
+       保存
+       ========================= */
 
     function saveEvents() {
 
+
       localStorage.setItem(
+
         "myCalendarEvents",
-        JSON.stringify(events)
+
+        JSON.stringify(
+          events
+        )
+
       );
 
     }
 
 
-    // =================================
-    // 月変更
-    // =================================
+
+    /* =========================
+       月変更
+       ========================= */
 
     function changeMonth(amount) {
 
+
       currentDate.setMonth(
-        currentDate.getMonth() + amount
+
+        currentDate.getMonth() +
+        amount
+
       );
+
 
       createCalendar();
 
     }
 
 
-    // =================================
-    // 通知許可
-    // =================================
+
+    /* =========================
+       通知許可
+       ========================= */
 
     function requestNotificationPermission() {
 
-      if ("Notification" in window) {
 
-        Notification.requestPermission();
+      if (
+        !("Notification" in window)
+      ) {
+
+        alert(
+          "このブラウザは通知に対応していません。"
+        );
+
+        return;
 
       }
+
+
+
+      Notification
+        .requestPermission()
+        .then(
+          function(permission) {
+
+
+            if (
+              permission ===
+              "granted"
+            ) {
+
+              alert(
+                "通知が許可されました！"
+              );
+
+            } else {
+
+              alert(
+                "通知が許可されませんでした。"
+              );
+
+            }
+
+          }
+        );
 
     }
 
 
-    // =================================
-    // リマインドチェック
-    // =================================
+
+    /* =========================
+       通知テスト
+       ========================= */
+
+    function testNotification() {
+
+
+      if (
+        !("Notification" in window)
+      ) {
+
+        alert(
+          "このブラウザは通知に対応していません。"
+        );
+
+        return;
+
+      }
+
+
+
+      if (
+        Notification.permission !==
+        "granted"
+      ) {
+
+        alert(
+          "先に「通知を許可する」を押してください。"
+        );
+
+        return;
+
+      }
+
+
+
+      new Notification(
+
+        "My Calendar 🔔",
+
+        {
+
+          body:
+            "通知テストです！"
+
+        }
+
+      );
+
+    }
+
+
+
+    /* =========================
+       リマインドチェック
+       ========================= */
 
     function checkReminders() {
 
+
       if (
+
         !("Notification" in window) ||
-        Notification.permission !== "granted"
+
+        Notification.permission !==
+        "granted"
+
       ) {
 
         return;
@@ -824,157 +1719,272 @@
       }
 
 
-      const now = new Date();
+
+      const now =
+        new Date();
 
 
-      for (const dateKey in events) {
+
+      for (
+        const dateKey in events
+      ) {
+
 
         const dateEvents =
           events[dateKey];
 
 
-        dateEvents.forEach(function(eventData) {
 
-          if (!eventData.time) {
-            return;
-          }
+        dateEvents.forEach(
+          function(eventData) {
 
 
-          const eventDate =
-            new Date(
-              dateKey + "T" + eventData.time
-            );
+            if (
+              !eventData.time
+            ) {
 
-
-          const reminders =
-            reminderTimes[eventData.priority];
-
-
-          reminders.forEach(function(offset) {
-
-            const reminderTime =
-              eventDate.getTime() - offset;
-
-
-            const difference =
-              Math.abs(
-                now.getTime() - reminderTime
-              );
-
-
-            /*
-              30秒以内なら通知
-            */
-
-            if (difference <= 30000) {
-
-              const reminderId =
-                dateKey +
-                "_" +
-                eventData.name +
-                "_" +
-                offset;
-
-
-              if (
-                !eventData.reminders.includes(
-                  reminderId
-                )
-              ) {
-
-                let message = "";
-
-                if (offset === 5 * 60 * 1000) {
-
-                  message =
-                    "「" +
-                    eventData.name +
-                    "」まであと5分です。";
-
-                } else if (
-                  offset === 60 * 60 * 1000
-                ) {
-
-                  message =
-                    "「" +
-                    eventData.name +
-                    "」まであと1時間です。";
-
-                } else if (
-                  offset === 24 * 60 * 60 * 1000
-                ) {
-
-                  message =
-                    "明日は「" +
-                    eventData.name +
-                    "」です。";
-
-                } else if (
-                  offset === 3 * 24 * 60 * 60 * 1000
-                ) {
-
-                  message =
-                    "3日後は「" +
-                    eventData.name +
-                    "」です。";
-
-                } else if (
-                  offset === 7 * 24 * 60 * 60 * 1000
-                ) {
-
-                  message =
-                    "1週間後は「" +
-                    eventData.name +
-                    "」です。";
-
-                }
-
-
-                new Notification(
-                  "My Calendar 🔔",
-                  {
-                    body: message
-                  }
-                );
-
-
-                eventData.reminders.push(
-                  reminderId
-                );
-
-                saveEvents();
-
-              }
+              return;
 
             }
 
-          });
 
-        });
+
+            const eventDate =
+              new Date(
+
+                dateKey +
+                "T" +
+                eventData.time
+
+              );
+
+
+
+            if (
+              isNaN(
+                eventDate.getTime()
+              )
+            ) {
+
+              return;
+
+            }
+
+
+
+            const reminders =
+              reminderTimes[
+                eventData.priority
+              ];
+
+
+
+            if (!reminders) {
+
+              return;
+
+            }
+
+
+
+            reminders.forEach(
+              function(offset) {
+
+
+                const reminderTime =
+                  eventDate.getTime() -
+                  offset;
+
+
+
+                const difference =
+                  Math.abs(
+
+                    now.getTime() -
+                    reminderTime
+
+                  );
+
+
+
+                /*
+                  リマインド時刻の前後30秒以内
+                */
+
+                if (
+                  difference <=
+                  30000
+                ) {
+
+
+                  const reminderId =
+
+                    dateKey +
+                    "_" +
+                    eventData.name +
+                    "_" +
+                    eventData.time +
+                    "_" +
+                    offset;
+
+
+
+                  if (
+
+                    !eventData.reminders.includes(
+                      reminderId
+                    )
+
+                  ) {
+
+
+                    let message =
+                      "";
+
+
+
+                    if (
+                      offset ===
+                      5 *
+                      60 *
+                      1000
+                    ) {
+
+                      message =
+                        "「" +
+                        eventData.name +
+                        "」まであと5分です。";
+
+                    }
+
+
+                    else if (
+                      offset ===
+                      60 *
+                      60 *
+                      1000
+                    ) {
+
+                      message =
+                        "「" +
+                        eventData.name +
+                        "」まであと1時間です。";
+
+                    }
+
+
+                    else if (
+                      offset ===
+                      24 *
+                      60 *
+                      60 *
+                      1000
+                    ) {
+
+                      message =
+                        "明日は「" +
+                        eventData.name +
+                        "」です。";
+
+                    }
+
+
+                    else if (
+                      offset ===
+                      3 *
+                      24 *
+                      60 *
+                      60 *
+                      1000
+                    ) {
+
+                      message =
+                        "3日後は「" +
+                        eventData.name +
+                        "」です。";
+
+                    }
+
+
+                    else if (
+                      offset ===
+                      7 *
+                      24 *
+                      60 *
+                      60 *
+                      1000
+                    ) {
+
+                      message =
+                        "1週間後は「" +
+                        eventData.name +
+                        "」です。";
+
+                    }
+
+
+
+                    new Notification(
+
+                      "My Calendar 🔔",
+
+                      {
+
+                        body:
+                          message
+
+                      }
+
+                    );
+
+
+
+                    eventData.reminders.push(
+                      reminderId
+                    );
+
+
+                    saveEvents();
+
+                  }
+
+                }
+
+              }
+            );
+
+          }
+        );
 
       }
 
     }
 
 
-    // =================================
-    // 初期化
-    // =================================
 
-    
+    /* =========================
+       初期化
+       ========================= */
+
+    createCalendar();
+
+
 
     /*
-      30秒ごとにリマインドをチェック
+      30秒ごとにリマインドチェック
     */
 
     setInterval(
+
       checkReminders,
+
       30000
+
     );
 
   </script>
 
-</
-  function closeModal() {
-  document.getElementById("eventModal").style.display = "none";
-}
+
+</body>
+
+</html>
