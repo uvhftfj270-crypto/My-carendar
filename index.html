@@ -961,9 +961,7 @@
     // 初期化
     // =================================
 
-    createCalendar();
-
-    requestNotificationPermission();
+    
 
     /*
       30秒ごとにリマインドをチェック
@@ -978,3 +976,13 @@
 
 </body>
 </html>
+// =================================
+// モーダルを閉じる
+// =================================
+
+function closeModal() {
+
+  document.getElementById("eventModal").style.display =
+    "none";
+
+}
