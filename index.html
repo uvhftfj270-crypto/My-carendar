@@ -76,6 +76,11 @@
       word-break: break-word;
     }
 
+    .event-stars {
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
 
     /* ====================
        予定表示画面
@@ -128,6 +133,11 @@
       word-break: break-word;
     }
 
+    .event-priority {
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
     .event-item button {
       padding: 5px 8px;
       font-size: 12px;
@@ -150,12 +160,51 @@
       padding: 8px 12px;
     }
 
+
+    /* ====================
+       重要度
+       ==================== */
+
+    .priority-area {
+      margin: 12px 0;
+      text-align: center;
+    }
+
+    .priority-label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .stars {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .star-button {
+      border: none;
+      background: none;
+      font-size: 28px;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .star-button.inactive {
+      opacity: 0.25;
+    }
+
+
+    /* ====================
+       閉じる
+       ==================== */
+
     .close-button {
       width: 100%;
       margin-top: 15px;
       padding: 10px;
       font-size: 16px;
     }
+
   </style>
 </head>
 
@@ -166,16 +215,20 @@
   <div class="calendar">
 
     <div class="month">
+
       <button onclick="changeMonth(-1)">◀</button>
 
       <h2 id="monthTitle"></h2>
 
       <button onclick="changeMonth(1)">▶</button>
+
     </div>
 
 
     <!-- 曜日 -->
+
     <div class="week">
+
       <div class="day header">日</div>
       <div class="day header">月</div>
       <div class="day header">火</div>
@@ -183,10 +236,12 @@
       <div class="day header">木</div>
       <div class="day header">金</div>
       <div class="day header">土</div>
+
     </div>
 
 
     <!-- 日付 -->
+
     <div id="calendarDays" class="week"></div>
 
   </div>
@@ -202,10 +257,14 @@
 
       <h2 id="modalTitle"></h2>
 
+
       <!-- 予定一覧 -->
+
       <div id="eventList" class="event-list"></div>
 
+
       <!-- 新しい予定 -->
+
       <div class="add-area">
 
         <input
@@ -217,6 +276,32 @@
         <button onclick="addEvent()">追加</button>
 
       </div>
+
+
+      <!-- 重要度 -->
+
+      <div class="priority-area">
+
+        <div class="priority-label">
+          重要度
+        </div>
+
+        <div class="stars">
+
+          <button class="star-button" onclick="setPriority(1)">★</button>
+
+          <button class="star-button" onclick="setPriority(2)">★</button>
+
+          <button class="star-button" onclick="setPriority(3)">★</button>
+
+          <button class="star-button" onclick="setPriority(4)">★</button>
+
+          <button class="star-button" onclick="setPriority(5)">★</button>
+
+        </div>
+
+      </div>
+
 
       <button
         class="close-button"
@@ -232,11 +317,16 @@
 
   <script>
 
-    // 現在表示している月
+    // =================================
+    // 基本データ
+    // =================================
+
     let currentDate = new Date();
 
-    // 現在選択している日付
     let selectedDate = null;
+
+    // 新しい予定の重要度
+    let selectedPriority = 3;
 
 
     // =================================
@@ -247,9 +337,22 @@
       JSON.parse(localStorage.getItem("myCalendarEvents")) || {};
 
 
-    // STEP 1で保存した
-    // 「9/10 → 歯医者」のようなデータを
-    // 「9/10 → ["歯医者"]」に変換する
+    // =================================
+    // 古いデータとの互換処理
+    // =================================
+    //
+    // 今まで：
+    // "2026-09-10": ["歯医者"]
+    //
+    // これから：
+    // "2026-09-10": [
+    //   {
+    //     name: "歯医者",
+    //     priority: 3
+    //   }
+    // ]
+    //
+
     for (const dateKey in events) {
 
       if (!Array.isArray(events[dateKey])) {
@@ -257,6 +360,22 @@
         events[dateKey] = [events[dateKey]];
 
       }
+
+      events[dateKey] =
+        events[dateKey].map(function(event) {
+
+          if (typeof event === "string") {
+
+            return {
+              name: event,
+              priority: 3
+            };
+
+          }
+
+          return event;
+
+        });
 
     }
 
@@ -267,8 +386,11 @@
 
     function createCalendar() {
 
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
+      const year =
+        currentDate.getFullYear();
+
+      const month =
+        currentDate.getMonth();
 
 
       document.getElementById("monthTitle").textContent =
@@ -291,9 +413,11 @@
 
 
       // 1日の前の空白
+
       for (let i = 0; i < firstDay; i++) {
 
-        const empty = document.createElement("div");
+        const empty =
+          document.createElement("div");
 
         empty.className = "day";
 
@@ -303,14 +427,21 @@
 
 
       // 日付
-      for (let day = 1; day <= lastDate; day++) {
 
-        const cell = document.createElement("div");
+      for (
+        let day = 1;
+        day <= lastDate;
+        day++
+      ) {
+
+        const cell =
+          document.createElement("div");
 
         cell.className = "day";
 
 
         // 今日かどうか
+
         const today = new Date();
 
         if (
@@ -325,10 +456,12 @@
 
 
         // 日付
+
         const dateNumber =
           document.createElement("div");
 
-        dateNumber.className = "date-number";
+        dateNumber.className =
+          "date-number";
 
         dateNumber.textContent = day;
 
@@ -336,6 +469,7 @@
 
 
         // 日付ID
+
         const dateKey =
           year + "-" +
           String(month + 1).padStart(2, "0") + "-" +
@@ -343,25 +477,54 @@
 
 
         // 予定を表示
+
         if (events[dateKey]) {
 
-          events[dateKey].forEach(function(eventName) {
+          events[dateKey].forEach(
+            function(eventData) {
 
-            const event =
-              document.createElement("div");
+              const event =
+                document.createElement("div");
 
-            event.className = "event";
+              event.className = "event";
 
-            event.textContent = eventName;
 
-            cell.appendChild(event);
+              // 予定名
 
-          });
+              const eventName =
+                document.createElement("div");
+
+              eventName.textContent =
+                eventData.name;
+
+              event.appendChild(eventName);
+
+
+              // 星
+
+              const stars =
+                document.createElement("div");
+
+              stars.className =
+                "event-stars";
+
+              stars.textContent =
+                "★".repeat(eventData.priority) +
+                "☆".repeat(5 - eventData.priority);
+
+              event.appendChild(stars);
+
+
+              cell.appendChild(event);
+
+            }
+          );
 
         }
 
 
         // 日付をタップ
+
         cell.onclick = function() {
 
           openModal(dateKey);
@@ -389,7 +552,15 @@
         dateKey + " の予定";
 
 
-      document.getElementById("eventInput").value = "";
+      document.getElementById("eventInput").value =
+        "";
+
+
+      // 初期値は★3
+
+      selectedPriority = 3;
+
+      updateStars();
 
 
       updateEventList();
@@ -397,6 +568,46 @@
 
       document.getElementById("eventModal").style.display =
         "block";
+
+    }
+
+
+    // =================================
+    // 星を選択
+    // =================================
+
+    function setPriority(priority) {
+
+      selectedPriority = priority;
+
+      updateStars();
+
+    }
+
+
+    // =================================
+    // 星の表示を更新
+    // =================================
+
+    function updateStars() {
+
+      const buttons =
+        document.querySelectorAll(".star-button");
+
+
+      buttons.forEach(function(button, index) {
+
+        if (index < selectedPriority) {
+
+          button.classList.remove("inactive");
+
+        } else {
+
+          button.classList.add("inactive");
+
+        }
+
+      });
 
     }
 
@@ -428,58 +639,86 @@
       }
 
 
-      todayEvents.forEach(function(eventName, index) {
+      todayEvents.forEach(
+        function(eventData, index) {
 
-        const item =
-          document.createElement("div");
+          const item =
+            document.createElement("div");
 
-        item.className = "event-item";
-
-
-        const name =
-          document.createElement("div");
-
-        name.className = "event-name";
-
-        name.textContent = eventName;
+          item.className =
+            "event-item";
 
 
-        // 編集ボタン
-        const editButton =
-          document.createElement("button");
+          // 予定名
 
-        editButton.textContent = "編集";
+          const name =
+            document.createElement("div");
 
-        editButton.onclick = function() {
+          name.className =
+            "event-name";
 
-          editEvent(index);
-
-        };
-
-
-        // 削除ボタン
-        const deleteButton =
-          document.createElement("button");
-
-        deleteButton.textContent = "削除";
-
-        deleteButton.onclick = function() {
-
-          deleteEvent(index);
-
-        };
+          name.textContent =
+            eventData.name;
 
 
-        item.appendChild(name);
+          // 重要度
 
-        item.appendChild(editButton);
+          const priority =
+            document.createElement("div");
 
-        item.appendChild(deleteButton);
+          priority.className =
+            "event-priority";
+
+          priority.textContent =
+            "★".repeat(eventData.priority) +
+            "☆".repeat(5 - eventData.priority);
 
 
-        list.appendChild(item);
+          // 編集ボタン
 
-      });
+          const editButton =
+            document.createElement("button");
+
+          editButton.textContent =
+            "編集";
+
+          editButton.onclick =
+            function() {
+
+              editEvent(index);
+
+            };
+
+
+          // 削除ボタン
+
+          const deleteButton =
+            document.createElement("button");
+
+          deleteButton.textContent =
+            "削除";
+
+          deleteButton.onclick =
+            function() {
+
+              deleteEvent(index);
+
+            };
+
+
+          item.appendChild(name);
+
+          item.appendChild(priority);
+
+          item.appendChild(editButton);
+
+          item.appendChild(deleteButton);
+
+
+          list.appendChild(item);
+
+        }
+      );
 
     }
 
@@ -512,13 +751,26 @@
       }
 
 
-      events[selectedDate].push(eventName);
+      events[selectedDate].push({
+
+        name: eventName,
+
+        priority: selectedPriority
+
+      });
 
 
       saveEvents();
 
 
       input.value = "";
+
+
+      // 追加後は★3に戻す
+
+      selectedPriority = 3;
+
+      updateStars();
 
 
       updateEventList();
@@ -534,14 +786,14 @@
 
     function editEvent(index) {
 
-      const oldName =
+      const oldEvent =
         events[selectedDate][index];
 
 
       const newName =
         prompt(
           "予定を編集してください",
-          oldName
+          oldEvent.name
         );
 
 
@@ -559,7 +811,7 @@
       }
 
 
-      events[selectedDate][index] =
+      oldEvent.name =
         newName.trim();
 
 
@@ -580,7 +832,7 @@
     function deleteEvent(index) {
 
       const eventName =
-        events[selectedDate][index];
+        events[selectedDate][index].name;
 
 
       const result =
@@ -599,8 +851,9 @@
       events[selectedDate].splice(index, 1);
 
 
-      // 予定が0件なら日付自体を削除
-      if (events[selectedDate].length === 0) {
+      if (
+        events[selectedDate].length === 0
+      ) {
 
         delete events[selectedDate];
 
