@@ -41,7 +41,7 @@
 
     .day {
       border: 1px solid #ddd;
-      min-height: 70px;
+      min-height: 75px;
       padding: 8px 2px;
       box-sizing: border-box;
       cursor: pointer;
@@ -75,6 +75,87 @@
       border-radius: 4px;
       word-break: break-word;
     }
+
+
+    /* ====================
+       予定表示画面
+       ==================== */
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+      background: white;
+      width: 85%;
+      max-width: 400px;
+      margin: 15% auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-sizing: border-box;
+      text-align: left;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .event-list {
+      margin-bottom: 15px;
+    }
+
+    .event-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 8px;
+      padding: 8px;
+      background: #f5f5f5;
+      border-radius: 6px;
+    }
+
+    .event-name {
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .event-item button {
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+
+    .add-area {
+      display: flex;
+      gap: 5px;
+    }
+
+    .add-area input {
+      flex: 1;
+      min-width: 0;
+      padding: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .add-area button {
+      padding: 8px 12px;
+    }
+
+    .close-button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 10px;
+      font-size: 16px;
+    }
   </style>
 </head>
 
@@ -86,9 +167,12 @@
 
     <div class="month">
       <button onclick="changeMonth(-1)">◀</button>
+
       <h2 id="monthTitle"></h2>
+
       <button onclick="changeMonth(1)">▶</button>
     </div>
+
 
     <!-- 曜日 -->
     <div class="week">
@@ -101,33 +185,107 @@
       <div class="day header">土</div>
     </div>
 
+
     <!-- 日付 -->
     <div id="calendarDays" class="week"></div>
 
   </div>
+
+
+  <!-- ====================
+       予定のモーダル
+       ==================== -->
+
+  <div id="eventModal" class="modal">
+
+    <div class="modal-content">
+
+      <h2 id="modalTitle"></h2>
+
+      <!-- 予定一覧 -->
+      <div id="eventList" class="event-list"></div>
+
+      <!-- 新しい予定 -->
+      <div class="add-area">
+
+        <input
+          id="eventInput"
+          type="text"
+          placeholder="新しい予定"
+        >
+
+        <button onclick="addEvent()">追加</button>
+
+      </div>
+
+      <button
+        class="close-button"
+        onclick="closeModal()"
+      >
+        閉じる
+      </button>
+
+    </div>
+
+  </div>
+
 
   <script>
 
     // 現在表示している月
     let currentDate = new Date();
 
-    // 予定を保存する場所
-    let events = JSON.parse(localStorage.getItem("myCalendarEvents")) || {};
+    // 現在選択している日付
+    let selectedDate = null;
 
 
+    // =================================
+    // 予定データ
+    // =================================
+
+    let events =
+      JSON.parse(localStorage.getItem("myCalendarEvents")) || {};
+
+
+    // STEP 1で保存した
+    // 「9/10 → 歯医者」のようなデータを
+    // 「9/10 → ["歯医者"]」に変換する
+    for (const dateKey in events) {
+
+      if (!Array.isArray(events[dateKey])) {
+
+        events[dateKey] = [events[dateKey]];
+
+      }
+
+    }
+
+
+    // =================================
     // カレンダーを作る
+    // =================================
+
     function createCalendar() {
 
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
 
+
       document.getElementById("monthTitle").textContent =
         year + "年 " + (month + 1) + "月";
 
-      const firstDay = new Date(year, month, 1).getDay();
-      const lastDate = new Date(year, month + 1, 0).getDate();
 
-      const calendarDays = document.getElementById("calendarDays");
+      const firstDay =
+        new Date(year, month, 1).getDay();
+
+
+      const lastDate =
+        new Date(year, month + 1, 0).getDate();
+
+
+      const calendarDays =
+        document.getElementById("calendarDays");
+
 
       calendarDays.innerHTML = "";
 
@@ -140,6 +298,7 @@
         empty.className = "day";
 
         calendarDays.appendChild(empty);
+
       }
 
 
@@ -159,12 +318,15 @@
           month === today.getMonth() &&
           year === today.getFullYear()
         ) {
+
           cell.classList.add("today");
+
         }
 
 
-        // 日付の数字
-        const dateNumber = document.createElement("div");
+        // 日付
+        const dateNumber =
+          document.createElement("div");
 
         dateNumber.className = "date-number";
 
@@ -173,84 +335,334 @@
         cell.appendChild(dateNumber);
 
 
-        // この日のID
+        // 日付ID
         const dateKey =
           year + "-" +
           String(month + 1).padStart(2, "0") + "-" +
           String(day).padStart(2, "0");
 
 
-        // 予定がある場合
+        // 予定を表示
         if (events[dateKey]) {
 
-          const event = document.createElement("div");
+          events[dateKey].forEach(function(eventName) {
 
-          event.className = "event";
+            const event =
+              document.createElement("div");
 
-          event.textContent = events[dateKey];
+            event.className = "event";
 
-          cell.appendChild(event);
+            event.textContent = eventName;
+
+            cell.appendChild(event);
+
+          });
+
         }
 
 
-        // 日付をタップしたとき
+        // 日付をタップ
         cell.onclick = function() {
 
-          addEvent(dateKey);
+          openModal(dateKey);
+
         };
 
 
         calendarDays.appendChild(cell);
+
       }
+
     }
 
 
+    // =================================
+    // 予定画面を開く
+    // =================================
+
+    function openModal(dateKey) {
+
+      selectedDate = dateKey;
+
+
+      document.getElementById("modalTitle").textContent =
+        dateKey + " の予定";
+
+
+      document.getElementById("eventInput").value = "";
+
+
+      updateEventList();
+
+
+      document.getElementById("eventModal").style.display =
+        "block";
+
+    }
+
+
+    // =================================
+    // 予定一覧を更新
+    // =================================
+
+    function updateEventList() {
+
+      const list =
+        document.getElementById("eventList");
+
+
+      list.innerHTML = "";
+
+
+      const todayEvents =
+        events[selectedDate] || [];
+
+
+      if (todayEvents.length === 0) {
+
+        list.textContent =
+          "予定はありません。";
+
+        return;
+
+      }
+
+
+      todayEvents.forEach(function(eventName, index) {
+
+        const item =
+          document.createElement("div");
+
+        item.className = "event-item";
+
+
+        const name =
+          document.createElement("div");
+
+        name.className = "event-name";
+
+        name.textContent = eventName;
+
+
+        // 編集ボタン
+        const editButton =
+          document.createElement("button");
+
+        editButton.textContent = "編集";
+
+        editButton.onclick = function() {
+
+          editEvent(index);
+
+        };
+
+
+        // 削除ボタン
+        const deleteButton =
+          document.createElement("button");
+
+        deleteButton.textContent = "削除";
+
+        deleteButton.onclick = function() {
+
+          deleteEvent(index);
+
+        };
+
+
+        item.appendChild(name);
+
+        item.appendChild(editButton);
+
+        item.appendChild(deleteButton);
+
+
+        list.appendChild(item);
+
+      });
+
+    }
+
+
+    // =================================
     // 予定を追加
-    function addEvent(dateKey) {
+    // =================================
 
-      const eventName = prompt(
-        dateKey + " の予定を入力してください"
-      );
+    function addEvent() {
+
+      const input =
+        document.getElementById("eventInput");
 
 
-      // キャンセルした場合
-      if (eventName === null) {
+      const eventName =
+        input.value.trim();
+
+
+      if (eventName === "") {
+
         return;
+
       }
 
 
-      // 空欄の場合
-      if (eventName.trim() === "") {
-        return;
+      if (!events[selectedDate]) {
+
+        events[selectedDate] = [];
+
       }
 
 
-      // 保存
-      events[dateKey] = eventName.trim();
+      events[selectedDate].push(eventName);
+
+
+      saveEvents();
+
+
+      input.value = "";
+
+
+      updateEventList();
+
+      createCalendar();
+
+    }
+
+
+    // =================================
+    // 予定を編集
+    // =================================
+
+    function editEvent(index) {
+
+      const oldName =
+        events[selectedDate][index];
+
+
+      const newName =
+        prompt(
+          "予定を編集してください",
+          oldName
+        );
+
+
+      if (newName === null) {
+
+        return;
+
+      }
+
+
+      if (newName.trim() === "") {
+
+        return;
+
+      }
+
+
+      events[selectedDate][index] =
+        newName.trim();
+
+
+      saveEvents();
+
+
+      updateEventList();
+
+      createCalendar();
+
+    }
+
+
+    // =================================
+    // 予定を削除
+    // =================================
+
+    function deleteEvent(index) {
+
+      const eventName =
+        events[selectedDate][index];
+
+
+      const result =
+        confirm(
+          "「" + eventName + "」を削除しますか？"
+        );
+
+
+      if (!result) {
+
+        return;
+
+      }
+
+
+      events[selectedDate].splice(index, 1);
+
+
+      // 予定が0件なら日付自体を削除
+      if (events[selectedDate].length === 0) {
+
+        delete events[selectedDate];
+
+      }
+
+
+      saveEvents();
+
+
+      updateEventList();
+
+      createCalendar();
+
+    }
+
+
+    // =================================
+    // 保存
+    // =================================
+
+    function saveEvents() {
 
       localStorage.setItem(
         "myCalendarEvents",
         JSON.stringify(events)
       );
 
-
-      // カレンダーを更新
-      createCalendar();
     }
 
 
+    // =================================
+    // モーダルを閉じる
+    // =================================
+
+    function closeModal() {
+
+      document.getElementById("eventModal").style.display =
+        "none";
+
+    }
+
+
+    // =================================
     // 月を変更
+    // =================================
+
     function changeMonth(amount) {
 
       currentDate.setMonth(
         currentDate.getMonth() + amount
       );
 
+
       createCalendar();
+
     }
 
 
+    // =================================
     // 最初にカレンダーを作る
+    // =================================
+
     createCalendar();
 
   </script>
