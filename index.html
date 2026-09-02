@@ -34,6 +34,7 @@
       padding: 5px 15px;
     }
 
+    /* 曜日＋日付を7列で並べる */
     .week {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -71,6 +72,7 @@
       <button onclick="changeMonth(1)">▶</button>
     </div>
 
+    <!-- 曜日 -->
     <div class="week">
       <div class="day header">日</div>
       <div class="day header">月</div>
@@ -81,7 +83,8 @@
       <div class="day header">土</div>
     </div>
 
-    <div id="calendarDays"></div>
+    <!-- 日付 -->
+    <div id="calendarDays" class="week"></div>
 
   </div>
 
@@ -92,30 +95,36 @@
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
 
+      // 年月を表示
       document.getElementById("monthTitle").textContent =
         year + "年 " + (month + 1) + "月";
 
+      // その月の1日が何曜日か
       const firstDay = new Date(year, month, 1).getDay();
+
+      // その月が何日まであるか
       const lastDate = new Date(year, month + 1, 0).getDate();
 
       const calendarDays = document.getElementById("calendarDays");
 
+      // 前の月の表示を消す
       calendarDays.innerHTML = "";
 
-      const week = document.createElement("div");
-      week.className = "week";
-
+      // 1日の前の空白
       for (let i = 0; i < firstDay; i++) {
         const empty = document.createElement("div");
         empty.className = "day";
-        week.appendChild(empty);
+        calendarDays.appendChild(empty);
       }
 
+      // 日付を全部追加
       for (let day = 1; day <= lastDate; day++) {
         const cell = document.createElement("div");
+
         cell.className = "day";
         cell.textContent = day;
 
+        // 今日なら色をつける
         const today = new Date();
 
         if (
@@ -126,25 +135,17 @@
           cell.classList.add("today");
         }
 
-        week.appendChild(cell);
-
-        if ((firstDay + day) % 7 === 0) {
-          calendarDays.appendChild(week);
-          week = document.createElement("div");
-          week.className = "week";
-        }
-      }
-
-      if (week.children.length > 0) {
-        calendarDays.appendChild(week);
+        calendarDays.appendChild(cell);
       }
     }
 
+    // 前月・次月
     function changeMonth(amount) {
       currentDate.setMonth(currentDate.getMonth() + amount);
       createCalendar();
     }
 
+    // 最初にカレンダーを作る
     createCalendar();
   </script>
 
