@@ -71,20 +71,18 @@
       margin-top: 5px;
       font-size: 12px;
       background: #e8e8ff;
-      padding: 3px;
+      padding: 4px;
       border-radius: 4px;
       word-break: break-word;
     }
 
-    .event-stars {
-      font-size: 10px;
+    .stars {
+      display: block;
+      font-size: 12px;
       margin-top: 2px;
     }
 
-
-    /* ====================
-       予定表示画面
-       ==================== */
+    /* モーダル */
 
     .modal {
       display: none;
@@ -101,11 +99,13 @@
       background: white;
       width: 85%;
       max-width: 400px;
-      margin: 15% auto;
+      margin: 10% auto;
       padding: 20px;
       border-radius: 12px;
       box-sizing: border-box;
       text-align: left;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     .modal-content h2 {
@@ -118,85 +118,53 @@
     }
 
     .event-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 5px;
-      margin-bottom: 8px;
-      padding: 8px;
+      margin-bottom: 10px;
+      padding: 10px;
       background: #f5f5f5;
       border-radius: 6px;
     }
 
     .event-name {
-      flex: 1;
+      font-size: 16px;
+      font-weight: bold;
       word-break: break-word;
     }
 
-    .event-priority {
-      font-size: 14px;
-      white-space: nowrap;
+    .event-info {
+      font-size: 13px;
+      margin-top: 4px;
     }
 
     .event-item button {
       padding: 5px 8px;
       font-size: 12px;
+      margin-top: 8px;
+      margin-right: 5px;
     }
 
     .add-area {
-      display: flex;
-      gap: 5px;
+      margin-top: 15px;
     }
 
-    .add-area input {
-      flex: 1;
-      min-width: 0;
-      padding: 8px;
+    .add-area input,
+    .add-area select {
+      width: 100%;
+      padding: 9px;
       font-size: 16px;
       box-sizing: border-box;
+      margin-bottom: 8px;
     }
 
     .add-area button {
-      padding: 8px 12px;
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
     }
 
-
-    /* ====================
-       重要度
-       ==================== */
-
-    .priority-area {
-      margin: 12px 0;
+    .star-select {
+      font-size: 22px;
       text-align: center;
     }
-
-    .priority-label {
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-
-    .stars {
-      display: flex;
-      justify-content: center;
-      gap: 4px;
-    }
-
-    .star-button {
-      border: none;
-      background: none;
-      font-size: 28px;
-      padding: 0;
-      cursor: pointer;
-    }
-
-    .star-button.inactive {
-      opacity: 0.25;
-    }
-
-
-    /* ====================
-       閉じる
-       ==================== */
 
     .close-button {
       width: 100%;
@@ -204,7 +172,6 @@
       padding: 10px;
       font-size: 16px;
     }
-
   </style>
 </head>
 
@@ -215,20 +182,14 @@
   <div class="calendar">
 
     <div class="month">
-
       <button onclick="changeMonth(-1)">◀</button>
 
       <h2 id="monthTitle"></h2>
 
       <button onclick="changeMonth(1)">▶</button>
-
     </div>
 
-
-    <!-- 曜日 -->
-
     <div class="week">
-
       <div class="day header">日</div>
       <div class="day header">月</div>
       <div class="day header">火</div>
@@ -236,20 +197,14 @@
       <div class="day header">木</div>
       <div class="day header">金</div>
       <div class="day header">土</div>
-
     </div>
-
-
-    <!-- 日付 -->
 
     <div id="calendarDays" class="week"></div>
 
   </div>
 
 
-  <!-- ====================
-       予定のモーダル
-       ==================== -->
+  <!-- 予定モーダル -->
 
   <div id="eventModal" class="modal">
 
@@ -257,51 +212,36 @@
 
       <h2 id="modalTitle"></h2>
 
-
-      <!-- 予定一覧 -->
-
       <div id="eventList" class="event-list"></div>
 
+      <hr>
 
-      <!-- 新しい予定 -->
+      <h3>予定を追加</h3>
 
       <div class="add-area">
 
         <input
           id="eventInput"
           type="text"
-          placeholder="新しい予定"
+          placeholder="予定名"
         >
+
+        <input
+          id="eventTime"
+          type="time"
+        >
+
+        <select id="eventPriority" class="star-select">
+          <option value="1">⭐☆☆☆☆</option>
+          <option value="2">⭐⭐☆☆☆</option>
+          <option value="3" selected>⭐⭐⭐☆☆</option>
+          <option value="4">⭐⭐⭐⭐☆</option>
+          <option value="5">⭐⭐⭐⭐⭐</option>
+        </select>
 
         <button onclick="addEvent()">追加</button>
 
       </div>
-
-
-      <!-- 重要度 -->
-
-      <div class="priority-area">
-
-        <div class="priority-label">
-          重要度
-        </div>
-
-        <div class="stars">
-
-          <button class="star-button" onclick="setPriority(1)">★</button>
-
-          <button class="star-button" onclick="setPriority(2)">★</button>
-
-          <button class="star-button" onclick="setPriority(3)">★</button>
-
-          <button class="star-button" onclick="setPriority(4)">★</button>
-
-          <button class="star-button" onclick="setPriority(5)">★</button>
-
-        </div>
-
-      </div>
-
 
       <button
         class="close-button"
@@ -317,47 +257,83 @@
 
   <script>
 
-    // =================================
-    // 基本データ
-    // =================================
-
     let currentDate = new Date();
-
     let selectedDate = null;
 
-    // 新しい予定の重要度
-    let selectedPriority = 3;
+    /*
+      予定データ
 
-
-    // =================================
-    // 予定データ
-    // =================================
+      {
+        "2026-09-10": [
+          {
+            name: "歯医者",
+            time: "15:00",
+            priority: 5,
+            reminders: []
+          }
+        ]
+      }
+    */
 
     let events =
       JSON.parse(localStorage.getItem("myCalendarEvents")) || {};
 
 
     // =================================
+    // リマインド設定
+    // =================================
+
+    const reminderTimes = {
+
+      1: [
+        5 * 60 * 1000
+      ],
+
+      2: [
+        60 * 60 * 1000,
+        5 * 60 * 1000
+      ],
+
+      3: [
+        24 * 60 * 60 * 1000,
+        60 * 60 * 1000,
+        5 * 60 * 1000
+      ],
+
+      4: [
+        3 * 24 * 60 * 60 * 1000,
+        24 * 60 * 60 * 1000,
+        60 * 60 * 1000,
+        5 * 60 * 1000
+      ],
+
+      5: [
+        7 * 24 * 60 * 60 * 1000,
+        3 * 24 * 60 * 60 * 1000,
+        24 * 60 * 60 * 1000,
+        60 * 60 * 1000,
+        5 * 60 * 1000
+      ]
+
+    };
+
+
+    // =================================
     // 古いデータとの互換処理
     // =================================
-    //
-    // 今まで：
-    // "2026-09-10": ["歯医者"]
-    //
-    // これから：
-    // "2026-09-10": [
-    //   {
-    //     name: "歯医者",
-    //     priority: 3
-    //   }
-    // ]
-    //
 
     for (const dateKey in events) {
 
       if (!Array.isArray(events[dateKey])) {
 
-        events[dateKey] = [events[dateKey]];
+        events[dateKey] = [
+          {
+            name: events[dateKey],
+            time: "12:00",
+            priority: 3,
+            reminders: []
+          }
+        ];
 
       }
 
@@ -368,9 +344,15 @@
 
             return {
               name: event,
-              priority: 3
+              time: "12:00",
+              priority: 3,
+              reminders: []
             };
 
+          }
+
+          if (!event.reminders) {
+            event.reminders = [];
           }
 
           return event;
@@ -381,38 +363,30 @@
 
 
     // =================================
-    // カレンダーを作る
+    // カレンダー作成
     // =================================
 
     function createCalendar() {
 
-      const year =
-        currentDate.getFullYear();
-
-      const month =
-        currentDate.getMonth();
-
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
 
       document.getElementById("monthTitle").textContent =
         year + "年 " + (month + 1) + "月";
 
-
       const firstDay =
         new Date(year, month, 1).getDay();
-
 
       const lastDate =
         new Date(year, month + 1, 0).getDate();
 
-
       const calendarDays =
         document.getElementById("calendarDays");
-
 
       calendarDays.innerHTML = "";
 
 
-      // 1日の前の空白
+      // 空白
 
       for (let i = 0; i < firstDay; i++) {
 
@@ -428,19 +402,13 @@
 
       // 日付
 
-      for (
-        let day = 1;
-        day <= lastDate;
-        day++
-      ) {
+      for (let day = 1; day <= lastDate; day++) {
 
         const cell =
           document.createElement("div");
 
         cell.className = "day";
 
-
-        // 今日かどうか
 
         const today = new Date();
 
@@ -455,20 +423,15 @@
         }
 
 
-        // 日付
-
         const dateNumber =
           document.createElement("div");
 
-        dateNumber.className =
-          "date-number";
+        dateNumber.className = "date-number";
 
         dateNumber.textContent = day;
 
         cell.appendChild(dateNumber);
 
-
-        // 日付ID
 
         const dateKey =
           year + "-" +
@@ -476,54 +439,37 @@
           String(day).padStart(2, "0");
 
 
-        // 予定を表示
+        // 予定表示
 
         if (events[dateKey]) {
 
-          events[dateKey].forEach(
-            function(eventData) {
+          events[dateKey].forEach(function(eventData) {
 
-              const event =
-                document.createElement("div");
+            const event =
+              document.createElement("div");
 
-              event.className = "event";
+            event.className = "event";
 
+            event.textContent =
+              eventData.name;
 
-              // 予定名
+            const stars =
+              document.createElement("span");
 
-              const eventName =
-                document.createElement("div");
+            stars.className = "stars";
 
-              eventName.textContent =
-                eventData.name;
+            stars.textContent =
+              "⭐".repeat(eventData.priority) +
+              "☆".repeat(5 - eventData.priority);
 
-              event.appendChild(eventName);
+            event.appendChild(stars);
 
+            cell.appendChild(event);
 
-              // 星
-
-              const stars =
-                document.createElement("div");
-
-              stars.className =
-                "event-stars";
-
-              stars.textContent =
-                "★".repeat(eventData.priority) +
-                "☆".repeat(5 - eventData.priority);
-
-              event.appendChild(stars);
-
-
-              cell.appendChild(event);
-
-            }
-          );
+          });
 
         }
 
-
-        // 日付をタップ
 
         cell.onclick = function() {
 
@@ -540,31 +486,23 @@
 
 
     // =================================
-    // 予定画面を開く
+    // モーダル
     // =================================
 
     function openModal(dateKey) {
 
       selectedDate = dateKey;
 
-
       document.getElementById("modalTitle").textContent =
         dateKey + " の予定";
 
+      document.getElementById("eventInput").value = "";
 
-      document.getElementById("eventInput").value =
-        "";
+      document.getElementById("eventTime").value = "12:00";
 
-
-      // 初期値は★3
-
-      selectedPriority = 3;
-
-      updateStars();
-
+      document.getElementById("eventPriority").value = "3";
 
       updateEventList();
-
 
       document.getElementById("eventModal").style.display =
         "block";
@@ -573,47 +511,7 @@
 
 
     // =================================
-    // 星を選択
-    // =================================
-
-    function setPriority(priority) {
-
-      selectedPriority = priority;
-
-      updateStars();
-
-    }
-
-
-    // =================================
-    // 星の表示を更新
-    // =================================
-
-    function updateStars() {
-
-      const buttons =
-        document.querySelectorAll(".star-button");
-
-
-      buttons.forEach(function(button, index) {
-
-        if (index < selectedPriority) {
-
-          button.classList.remove("inactive");
-
-        } else {
-
-          button.classList.add("inactive");
-
-        }
-
-      });
-
-    }
-
-
-    // =================================
-    // 予定一覧を更新
+    // 予定一覧
     // =================================
 
     function updateEventList() {
@@ -621,9 +519,7 @@
       const list =
         document.getElementById("eventList");
 
-
       list.innerHTML = "";
-
 
       const todayEvents =
         events[selectedDate] || [];
@@ -639,105 +535,117 @@
       }
 
 
-      todayEvents.forEach(
-        function(eventData, index) {
+      todayEvents.forEach(function(eventData, index) {
 
-          const item =
-            document.createElement("div");
+        const item =
+          document.createElement("div");
 
-          item.className =
-            "event-item";
+        item.className = "event-item";
 
 
-          // 予定名
+        const name =
+          document.createElement("div");
 
-          const name =
-            document.createElement("div");
+        name.className = "event-name";
 
-          name.className =
-            "event-name";
-
-          name.textContent =
-            eventData.name;
+        name.textContent =
+          eventData.name;
 
 
-          // 重要度
+        const info =
+          document.createElement("div");
 
-          const priority =
-            document.createElement("div");
+        info.className = "event-info";
 
-          priority.className =
-            "event-priority";
-
-          priority.textContent =
-            "★".repeat(eventData.priority) +
-            "☆".repeat(5 - eventData.priority);
-
-
-          // 編集ボタン
-
-          const editButton =
-            document.createElement("button");
-
-          editButton.textContent =
-            "編集";
-
-          editButton.onclick =
-            function() {
-
-              editEvent(index);
-
-            };
+        info.textContent =
+          "⏰ " + eventData.time +
+          "　" +
+          "⭐".repeat(eventData.priority) +
+          "☆".repeat(5 - eventData.priority);
 
 
-          // 削除ボタン
+        item.appendChild(name);
 
-          const deleteButton =
-            document.createElement("button");
-
-          deleteButton.textContent =
-            "削除";
-
-          deleteButton.onclick =
-            function() {
-
-              deleteEvent(index);
-
-            };
+        item.appendChild(info);
 
 
-          item.appendChild(name);
+        // 編集
 
-          item.appendChild(priority);
+        const editButton =
+          document.createElement("button");
 
-          item.appendChild(editButton);
+        editButton.textContent = "編集";
 
-          item.appendChild(deleteButton);
+        editButton.onclick = function() {
+
+          editEvent(index);
+
+        };
 
 
-          list.appendChild(item);
+        // 削除
 
-        }
-      );
+        const deleteButton =
+          document.createElement("button");
+
+        deleteButton.textContent = "削除";
+
+        deleteButton.onclick = function() {
+
+          deleteEvent(index);
+
+        };
+
+
+        item.appendChild(editButton);
+
+        item.appendChild(deleteButton);
+
+        list.appendChild(item);
+
+      });
 
     }
 
 
     // =================================
-    // 予定を追加
+    // 予定追加
     // =================================
 
     function addEvent() {
 
-      const input =
+      const nameInput =
         document.getElementById("eventInput");
+
+      const timeInput =
+        document.getElementById("eventTime");
+
+      const priorityInput =
+        document.getElementById("eventPriority");
 
 
       const eventName =
-        input.value.trim();
+        nameInput.value.trim();
+
+      const eventTime =
+        timeInput.value;
+
+      const priority =
+        Number(priorityInput.value);
 
 
       if (eventName === "") {
+
+        alert("予定名を入力してください。");
+
+        return;
+
+      }
+
+
+      if (!eventTime) {
+
+        alert("予定時刻を入力してください。");
 
         return;
 
@@ -755,23 +663,18 @@
 
         name: eventName,
 
-        priority: selectedPriority
+        time: eventTime,
+
+        priority: priority,
+
+        reminders: []
 
       });
 
 
       saveEvents();
 
-
-      input.value = "";
-
-
-      // 追加後は★3に戻す
-
-      selectedPriority = 3;
-
-      updateStars();
-
+      nameInput.value = "";
 
       updateEventList();
 
@@ -781,42 +684,35 @@
 
 
     // =================================
-    // 予定を編集
+    // 編集
     // =================================
 
     function editEvent(index) {
 
-      const oldEvent =
+      const eventData =
         events[selectedDate][index];
 
 
       const newName =
         prompt(
-          "予定を編集してください",
-          oldEvent.name
+          "予定名を編集してください",
+          eventData.name
         );
 
 
-      if (newName === null) {
+      if (newName === null ||
+          newName.trim() === "") {
 
         return;
 
       }
 
 
-      if (newName.trim() === "") {
-
-        return;
-
-      }
-
-
-      oldEvent.name =
+      eventData.name =
         newName.trim();
 
 
       saveEvents();
-
 
       updateEventList();
 
@@ -826,18 +722,19 @@
 
 
     // =================================
-    // 予定を削除
+    // 削除
     // =================================
 
     function deleteEvent(index) {
 
-      const eventName =
-        events[selectedDate][index].name;
+      const eventData =
+        events[selectedDate][index];
 
 
       const result =
         confirm(
-          "「" + eventName + "」を削除しますか？"
+          "「" + eventData.name +
+          "」を削除しますか？"
         );
 
 
@@ -851,9 +748,7 @@
       events[selectedDate].splice(index, 1);
 
 
-      if (
-        events[selectedDate].length === 0
-      ) {
+      if (events[selectedDate].length === 0) {
 
         delete events[selectedDate];
 
@@ -861,7 +756,6 @@
 
 
       saveEvents();
-
 
       updateEventList();
 
@@ -885,19 +779,7 @@
 
 
     // =================================
-    // モーダルを閉じる
-    // =================================
-
-    function closeModal() {
-
-      document.getElementById("eventModal").style.display =
-        "none";
-
-    }
-
-
-    // =================================
-    // 月を変更
+    // 月変更
     // =================================
 
     function changeMonth(amount) {
@@ -906,17 +788,191 @@
         currentDate.getMonth() + amount
       );
 
-
       createCalendar();
 
     }
 
 
     // =================================
-    // 最初にカレンダーを作る
+    // 通知許可
+    // =================================
+
+    function requestNotificationPermission() {
+
+      if ("Notification" in window) {
+
+        Notification.requestPermission();
+
+      }
+
+    }
+
+
+    // =================================
+    // リマインドチェック
+    // =================================
+
+    function checkReminders() {
+
+      if (
+        !("Notification" in window) ||
+        Notification.permission !== "granted"
+      ) {
+
+        return;
+
+      }
+
+
+      const now = new Date();
+
+
+      for (const dateKey in events) {
+
+        const dateEvents =
+          events[dateKey];
+
+
+        dateEvents.forEach(function(eventData) {
+
+          if (!eventData.time) {
+            return;
+          }
+
+
+          const eventDate =
+            new Date(
+              dateKey + "T" + eventData.time
+            );
+
+
+          const reminders =
+            reminderTimes[eventData.priority];
+
+
+          reminders.forEach(function(offset) {
+
+            const reminderTime =
+              eventDate.getTime() - offset;
+
+
+            const difference =
+              Math.abs(
+                now.getTime() - reminderTime
+              );
+
+
+            /*
+              30秒以内なら通知
+            */
+
+            if (difference <= 30000) {
+
+              const reminderId =
+                dateKey +
+                "_" +
+                eventData.name +
+                "_" +
+                offset;
+
+
+              if (
+                !eventData.reminders.includes(
+                  reminderId
+                )
+              ) {
+
+                let message = "";
+
+                if (offset === 5 * 60 * 1000) {
+
+                  message =
+                    "「" +
+                    eventData.name +
+                    "」まであと5分です。";
+
+                } else if (
+                  offset === 60 * 60 * 1000
+                ) {
+
+                  message =
+                    "「" +
+                    eventData.name +
+                    "」まであと1時間です。";
+
+                } else if (
+                  offset === 24 * 60 * 60 * 1000
+                ) {
+
+                  message =
+                    "明日は「" +
+                    eventData.name +
+                    "」です。";
+
+                } else if (
+                  offset === 3 * 24 * 60 * 60 * 1000
+                ) {
+
+                  message =
+                    "3日後は「" +
+                    eventData.name +
+                    "」です。";
+
+                } else if (
+                  offset === 7 * 24 * 60 * 60 * 1000
+                ) {
+
+                  message =
+                    "1週間後は「" +
+                    eventData.name +
+                    "」です。";
+
+                }
+
+
+                new Notification(
+                  "My Calendar 🔔",
+                  {
+                    body: message
+                  }
+                );
+
+
+                eventData.reminders.push(
+                  reminderId
+                );
+
+                saveEvents();
+
+              }
+
+            }
+
+          });
+
+        });
+
+      }
+
+    }
+
+
+    // =================================
+    // 初期化
     // =================================
 
     createCalendar();
+
+    requestNotificationPermission();
+
+    /*
+      30秒ごとにリマインドをチェック
+    */
+
+    setInterval(
+      checkReminders,
+      30000
+    );
 
   </script>
 
