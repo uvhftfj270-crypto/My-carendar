@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Calendar</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .calendar {
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .month {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .month button {
+      font-size: 20px;
+      padding: 5px 15px;
+    }
+
+    .week {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .day {
+      border: 1px solid #ddd;
+      min-height: 55px;
+      padding: 8px 2px;
+      box-sizing: border-box;
+    }
+
+    .header {
+      font-weight: bold;
+      background: #f5f5f5;
+      min-height: auto;
+    }
+
+    .today {
+      background: #dff5df;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>My Calendar</h1>
+
+  <div class="calendar">
+
+    <div class="month">
+      <button onclick="changeMonth(-1)">◀</button>
+      <h2 id="monthTitle"></h2>
+      <button onclick="changeMonth(1)">▶</button>
+    </div>
+
+    <div class="week">
+      <div class="day header">日</div>
+      <div class="day header">月</div>
+      <div class="day header">火</div>
+      <div class="day header">水</div>
+      <div class="day header">木</div>
+      <div class="day header">金</div>
+      <div class="day header">土</div>
+    </div>
+
+    <div id="calendarDays"></div>
+
+  </div>
+
+  <script>
+    let currentDate = new Date();
+
+    function createCalendar() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      document.getElementById("monthTitle").textContent =
+        year + "年 " + (month + 1) + "月";
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const lastDate = new Date(year, month + 1, 0).getDate();
+
+      const calendarDays = document.getElementById("calendarDays");
+
+      calendarDays.innerHTML = "";
+
+      const week = document.createElement("div");
+      week.className = "week";
+
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement("div");
+        empty.className = "day";
+        week.appendChild(empty);
+      }
+
+      for (let day = 1; day <= lastDate; day++) {
+        const cell = document.createElement("div");
+        cell.className = "day";
+        cell.textContent = day;
+
+        const today = new Date();
+
+        if (
+          day === today.getDate() &&
+          month === today.getMonth() &&
+          year === today.getFullYear()
+        ) {
+          cell.classList.add("today");
+        }
+
+        week.appendChild(cell);
+
+        if ((firstDay + day) % 7 === 0) {
+          calendarDays.appendChild(week);
+          week = document.createElement("div");
+          week.className = "week";
+        }
+      }
+
+      if (week.children.length > 0) {
+        calendarDays.appendChild(week);
+      }
+    }
+
+    function changeMonth(amount) {
+      currentDate.setMonth(currentDate.getMonth() + amount);
+      createCalendar();
+    }
+
+    createCalendar();
+  </script>
+
+</body>
+</html>
