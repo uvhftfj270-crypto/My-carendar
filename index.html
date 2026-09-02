@@ -34,7 +34,6 @@
       padding: 5px 15px;
     }
 
-    /* 曜日＋日付を7列で並べる */
     .week {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -42,20 +41,39 @@
 
     .day {
       border: 1px solid #ddd;
-      min-height: 55px;
+      min-height: 70px;
       padding: 8px 2px;
       box-sizing: border-box;
+      cursor: pointer;
+    }
+
+    .day:hover {
+      background: #f5f5f5;
     }
 
     .header {
       font-weight: bold;
       background: #f5f5f5;
       min-height: auto;
+      cursor: default;
     }
 
     .today {
       background: #dff5df;
       font-weight: bold;
+    }
+
+    .date-number {
+      font-size: 18px;
+    }
+
+    .event {
+      margin-top: 5px;
+      font-size: 12px;
+      background: #e8e8ff;
+      padding: 3px;
+      border-radius: 4px;
+      word-break: break-word;
     }
   </style>
 </head>
@@ -89,42 +107,51 @@
   </div>
 
   <script>
+
+    // 現在表示している月
     let currentDate = new Date();
 
+    // 予定を保存する場所
+    let events = JSON.parse(localStorage.getItem("myCalendarEvents")) || {};
+
+
+    // カレンダーを作る
     function createCalendar() {
+
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
 
-      // 年月を表示
       document.getElementById("monthTitle").textContent =
         year + "年 " + (month + 1) + "月";
 
-      // その月の1日が何曜日か
       const firstDay = new Date(year, month, 1).getDay();
-
-      // その月が何日まであるか
       const lastDate = new Date(year, month + 1, 0).getDate();
 
       const calendarDays = document.getElementById("calendarDays");
 
-      // 前の月の表示を消す
       calendarDays.innerHTML = "";
+
 
       // 1日の前の空白
       for (let i = 0; i < firstDay; i++) {
+
         const empty = document.createElement("div");
+
         empty.className = "day";
+
         calendarDays.appendChild(empty);
       }
 
-      // 日付を全部追加
+
+      // 日付
       for (let day = 1; day <= lastDate; day++) {
+
         const cell = document.createElement("div");
 
         cell.className = "day";
-        cell.textContent = day;
 
-        // 今日なら色をつける
+
+        // 今日かどうか
         const today = new Date();
 
         if (
@@ -135,18 +162,97 @@
           cell.classList.add("today");
         }
 
+
+        // 日付の数字
+        const dateNumber = document.createElement("div");
+
+        dateNumber.className = "date-number";
+
+        dateNumber.textContent = day;
+
+        cell.appendChild(dateNumber);
+
+
+        // この日のID
+        const dateKey =
+          year + "-" +
+          String(month + 1).padStart(2, "0") + "-" +
+          String(day).padStart(2, "0");
+
+
+        // 予定がある場合
+        if (events[dateKey]) {
+
+          const event = document.createElement("div");
+
+          event.className = "event";
+
+          event.textContent = events[dateKey];
+
+          cell.appendChild(event);
+        }
+
+
+        // 日付をタップしたとき
+        cell.onclick = function() {
+
+          addEvent(dateKey);
+        };
+
+
         calendarDays.appendChild(cell);
       }
     }
 
-    // 前月・次月
-    function changeMonth(amount) {
-      currentDate.setMonth(currentDate.getMonth() + amount);
+
+    // 予定を追加
+    function addEvent(dateKey) {
+
+      const eventName = prompt(
+        dateKey + " の予定を入力してください"
+      );
+
+
+      // キャンセルした場合
+      if (eventName === null) {
+        return;
+      }
+
+
+      // 空欄の場合
+      if (eventName.trim() === "") {
+        return;
+      }
+
+
+      // 保存
+      events[dateKey] = eventName.trim();
+
+      localStorage.setItem(
+        "myCalendarEvents",
+        JSON.stringify(events)
+      );
+
+
+      // カレンダーを更新
       createCalendar();
     }
 
+
+    // 月を変更
+    function changeMonth(amount) {
+
+      currentDate.setMonth(
+        currentDate.getMonth() + amount
+      );
+
+      createCalendar();
+    }
+
+
     // 最初にカレンダーを作る
     createCalendar();
+
   </script>
 
 </body>
