@@ -6,5 +6,11 @@
     "directory": ".",
     "binding": "ASSETS",
     "run_worker_first": ["/api/*"]
+  "d1_databases": [
+  {
+    "binding": "DB",
+    "database_name": "my-calendar-db",
+    "database_id": "ここにD1のDatabase ID"
   }
+]}
 }
