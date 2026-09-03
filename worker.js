@@ -13,6 +13,6 @@ export default {
       });
     }
 
-    return new Response("My Calendar API OK");
+    return env.ASSETS.fetch(request);
   }
 };
