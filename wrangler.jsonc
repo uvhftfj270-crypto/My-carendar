@@ -2,15 +2,18 @@
   "name": "my-calendar",
   "compatibility_date": "2026-09-03",
   "main": "worker.js",
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "my-calendar-db",
+      "database_id": "ここにDatabase ID"
+    }
+  ],
+
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
     "run_worker_first": ["/api/*"]
-  "d1_databases": [
-  {
-    "binding": "DB",
-    "database_name": "my-calendar-db",
-    "database_id": "ここにD1のDatabase ID"
   }
-]}
 }
