@@ -3,7 +3,7 @@
   "compatibility_date": "2026-09-03",
   "main": "worker.js",
 
-  "d1_databases": [
+  "d1_databases" [
     {
       "binding": "DB",
       "database_name": "my-calendar-db",
