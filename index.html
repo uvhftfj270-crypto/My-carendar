@@ -271,6 +271,8 @@
       background: #f5f5f5;
 
       border-radius: 8px;
+
+      cursor: pointer;
     }
 
     .empty {
@@ -417,7 +419,13 @@
 
   let selectedDate = null;
 
-  let editingEventIndex = null;
+  let editingEventId = null;
+
+  /*
+   * D1から取得したイベントを
+   * メモリ上に保持する
+   */
+  let events = [];
 
 
   /* =========================
@@ -460,16 +468,18 @@
 
 
   /* =========================
-     イベント取得
+     リマインダー送信済み情報
   ========================= */
 
-  function getEvents() {
+  function getSentReminders() {
 
     const data =
-      localStorage.getItem("calendarEvents");
+      localStorage.getItem(
+        "calendarSentReminders"
+      );
 
     if (!data) {
-      return [];
+      return {};
     }
 
     try {
@@ -479,27 +489,68 @@
     } catch (error) {
 
       console.error(
-        "イベントデータの読み込みに失敗しました",
+        "リマインダー情報の読み込みに失敗しました",
         error
       );
 
-      return [];
+      return {};
 
     }
 
   }
 
 
-  /* =========================
-     イベント保存
-  ========================= */
-
-  function saveEvents(events) {
+  function saveSentReminders(data) {
 
     localStorage.setItem(
-      "calendarEvents",
-      JSON.stringify(events)
+      "calendarSentReminders",
+      JSON.stringify(data)
     );
+
+  }
+
+
+  /* =========================
+     API
+  ========================= */
+
+  async function loadEvents() {
+
+    try {
+
+      const response =
+        await fetch("/api/events");
+
+      if (!response.ok) {
+
+        throw new Error(
+          `HTTP ${response.status}`
+        );
+
+      }
+
+      events =
+        await response.json();
+
+      console.log(
+        "D1からイベントを取得しました:",
+        events
+      );
+
+      renderCalendar();
+
+    } catch (error) {
+
+      console.error(
+        "イベント取得エラー:",
+        error
+      );
+
+      alert(
+        "予定の読み込みに失敗しました。"
+      );
+
+    }
 
   }
 
@@ -538,10 +589,6 @@
     const lastDate =
       new Date(year, month + 1, 0)
         .getDate();
-
-
-    const events =
-      getEvents();
 
 
     /* 空白 */
@@ -614,7 +661,7 @@
       const dayEvents =
         events.filter(
           event =>
-            event.date === dateString
+            event.event_date === dateString
         );
 
 
@@ -628,12 +675,7 @@
 
 
         const time =
-          event.time
-            ? event.time.replace(
-                `${dateString}T`,
-                ""
-              )
-            : "";
+          event.event_time || "";
 
 
         eventDiv.innerHTML = `
@@ -644,7 +686,7 @@
 
           ${
             time
-              ? `<div class="event-time">${time}</div>`
+              ? `<div class="event-time">${escapeHtml(time)}</div>`
               : ""
           }
 
@@ -702,7 +744,7 @@
       document.createElement("div");
 
     div.textContent =
-      text;
+      text ?? "";
 
     return div.innerHTML;
 
@@ -718,7 +760,7 @@
     selectedDate =
       dateString;
 
-    editingEventIndex =
+    editingEventId =
       null;
 
 
@@ -762,7 +804,7 @@
 
 
   /* =========================
-     ★ モーダルを閉じる
+     モーダルを閉じる
   ========================= */
 
   function closeModal() {
@@ -776,7 +818,7 @@
     selectedDate =
       null;
 
-    editingEventIndex =
+    editingEventId =
       null;
 
   }
@@ -796,23 +838,12 @@
     eventList.innerHTML = "";
 
 
-    const events =
-      getEvents();
-
-
     const matchingEvents =
-      events
-        .map(
-          (event, index) => ({
-            event,
-            index
-          })
-        )
-        .filter(
-          item =>
-            item.event.date ===
-            selectedDate
-        );
+      events.filter(
+        event =>
+          event.event_date ===
+          selectedDate
+      );
 
 
     if (
@@ -830,7 +861,7 @@
 
 
     matchingEvents.forEach(
-      item => {
+      event => {
 
         const div =
           document.createElement("div");
@@ -842,31 +873,27 @@
         div.innerHTML = `
 
           <strong>
-            ${escapeHtml(item.event.name)}
+            ${escapeHtml(event.name)}
           </strong>
 
           <br>
 
           ${
-            item.event.time
-              ? item.event.time
-                  .replace(
-                    `${item.event.date}T`,
-                    ""
-                  )
+            event.event_time
+              ? escapeHtml(event.event_time)
               : "時間未設定"
           }
 
           <br>
 
-          ${"⭐".repeat(item.event.priority)}
+          ${"⭐".repeat(event.priority)}
 
         `;
 
 
         div.addEventListener(
           "click",
-          () => editEvent(item.index)
+          () => editEvent(event.id)
         );
 
 
@@ -882,17 +909,28 @@
      イベント編集
   ========================= */
 
-  function editEvent(index) {
-
-    const events =
-      getEvents();
+  function editEvent(id) {
 
     const event =
-      events[index];
+      events.find(
+        item =>
+          Number(item.id) === Number(id)
+      );
 
 
-    editingEventIndex =
-      index;
+    if (!event) {
+
+      alert(
+        "予定が見つかりません。"
+      );
+
+      return;
+
+    }
+
+
+    editingEventId =
+      event.id;
 
 
     document.getElementById(
@@ -907,10 +945,17 @@
       event.name;
 
 
+    /*
+     * datetime-local用に
+     * YYYY-MM-DDTHH:MMへ戻す
+     */
+
     document.getElementById(
       "eventTime"
     ).value =
-      event.time || "";
+      event.event_time
+        ? `${event.event_date}T${event.event_time}`
+        : `${event.event_date}T12:00`;
 
 
     document.getElementById(
@@ -931,7 +976,7 @@
      イベント保存
   ========================= */
 
-  function saveEvent() {
+  async function saveEvent() {
 
     const name =
       document.getElementById(
@@ -939,7 +984,7 @@
       ).value.trim();
 
 
-    const time =
+    const timeValue =
       document.getElementById(
         "eventTime"
       ).value;
@@ -969,60 +1014,164 @@
     }
 
 
-    const events =
-      getEvents();
+    /*
+     * datetime-local
+     *
+     * 例：
+     * 2026-09-09T15:00
+     *
+     * ↓
+     *
+     * event_date = 2026-09-09
+     * event_time = 15:00
+     */
+
+    let eventDate =
+      selectedDate;
+
+    let eventTime = "";
 
 
-    if (
-      editingEventIndex !== null
-    ) {
+    if (timeValue) {
 
-      const oldEvent =
-        events[editingEventIndex];
+      const parts =
+        timeValue.split("T");
 
+      if (parts.length === 2) {
 
-      events[editingEventIndex] = {
+        eventDate =
+          parts[0];
 
-        ...oldEvent,
+        eventTime =
+          parts[1];
 
-        name,
-        date: selectedDate,
-        time,
-        priority,
-
-        reminders:
-          reminderTimes[priority]
-
-      };
-
-    } else {
-
-      events.push({
-
-        name,
-
-        date:
-          selectedDate,
-
-        time,
-
-        priority,
-
-        reminders:
-          reminderTimes[priority]
-
-      });
+      }
 
     }
 
 
-    saveEvents(events);
+    const data = {
+
+      name,
+
+      event_date:
+        eventDate,
+
+      event_time:
+        eventTime,
+
+      priority
+
+    };
 
 
-    renderCalendar();
+    const saveButton =
+      document.getElementById(
+        "saveEventButton"
+      );
+
+    saveButton.disabled = true;
 
 
-    closeModal();
+    try {
+
+      let response;
+
+
+      /* =====================
+         編集
+      ===================== */
+
+      if (
+        editingEventId !== null
+      ) {
+
+        response =
+          await fetch(
+            `/api/events/${editingEventId}`,
+            {
+              method: "PUT",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify(data)
+            }
+          );
+
+      }
+
+      /* =====================
+         新規追加
+      ===================== */
+
+      else {
+
+        response =
+          await fetch(
+            "/api/events",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify(data)
+            }
+          );
+
+      }
+
+
+      if (!response.ok) {
+
+        const errorData =
+          await response.json()
+            .catch(
+              () => ({})
+            );
+
+        throw new Error(
+          errorData.error ||
+          `HTTP ${response.status}`
+        );
+
+      }
+
+
+      /*
+       * D1から最新状態を
+       * 取り直す
+       */
+
+      await loadEvents();
+
+
+      closeModal();
+
+
+    } catch (error) {
+
+      console.error(
+        "イベント保存エラー:",
+        error
+      );
+
+      alert(
+        `予定の保存に失敗しました。\n${error.message}`
+      );
+
+    } finally {
+
+      saveButton.disabled = false;
+
+    }
 
   }
 
@@ -1031,17 +1180,13 @@
      イベント削除
   ========================= */
 
-  function deleteEvent() {
+  async function deleteEvent() {
 
     if (
-      editingEventIndex === null
+      editingEventId === null
     ) {
       return;
     }
-
-
-    const events =
-      getEvents();
 
 
     if (
@@ -1055,19 +1200,68 @@
     }
 
 
-    events.splice(
-      editingEventIndex,
-      1
-    );
+    try {
+
+      const response =
+        await fetch(
+          `/api/events/${editingEventId}`,
+          {
+            method: "DELETE"
+          }
+        );
 
 
-    saveEvents(events);
+      if (!response.ok) {
+
+        const errorData =
+          await response.json()
+            .catch(
+              () => ({})
+            );
+
+        throw new Error(
+          errorData.error ||
+          `HTTP ${response.status}`
+        );
+
+      }
 
 
-    renderCalendar();
+      /*
+       * リマインダーの
+       * ローカル情報も削除
+       */
+
+      const sentReminders =
+        getSentReminders();
+
+      delete sentReminders[
+        editingEventId
+      ];
+
+      saveSentReminders(
+        sentReminders
+      );
 
 
-    closeModal();
+      await loadEvents();
+
+
+      closeModal();
+
+
+    } catch (error) {
+
+      console.error(
+        "イベント削除エラー:",
+        error
+      );
+
+      alert(
+        `予定の削除に失敗しました。\n${error.message}`
+      );
+
+    }
 
   }
 
@@ -1135,7 +1329,7 @@
 
 
   /* =========================
-     ローカル通知チェック
+     リマインダー通知
   ========================= */
 
   function checkReminders() {
@@ -1155,12 +1349,12 @@
     }
 
 
-    const events =
-      getEvents();
-
-
     const now =
       Date.now();
+
+
+    const sentReminders =
+      getSentReminders();
 
 
     let changed = false;
@@ -1168,49 +1362,65 @@
 
     events.forEach(event => {
 
-      if (!event.time) {
+      if (!event.event_time) {
         return;
       }
 
 
-      const eventTime =
-        new Date(event.time)
-          .getTime();
+      /*
+       * D1の
+       *
+       * event_date = 2026-09-09
+       * event_time = 15:00
+       *
+       * を
+       *
+       * 2026-09-09T15:00
+       *
+       * として扱う
+       */
+
+      const eventDateTime =
+        `${event.event_date}T${event.event_time}`;
+
+
+      const eventTimestamp =
+        new Date(
+          eventDateTime
+        ).getTime();
 
 
       if (
-        Number.isNaN(eventTime)
+        Number.isNaN(eventTimestamp)
       ) {
         return;
       }
 
 
-      if (!event.reminders) {
-
-        event.reminders =
-          reminderTimes[
-            event.priority
-          ] || [];
-
-      }
+      const reminders =
+        reminderTimes[
+          Number(event.priority)
+        ] || [];
 
 
-      if (!event.sentReminders) {
+      if (!sentReminders[event.id]) {
 
-        event.sentReminders = [];
+        sentReminders[event.id] =
+          [];
 
       }
 
 
-      event.reminders.forEach(
+      reminders.forEach(
         reminder => {
 
-          const reminderTime =
-            eventTime - reminder;
+          const reminderTimestamp =
+            eventTimestamp -
+            reminder;
 
 
           const reminderId =
-            `${event.time}_${reminder}`;
+            `${event.event_date}_${event.event_time}_${reminder}`;
 
 
           /*
@@ -1219,11 +1429,13 @@
            */
 
           if (
-            now >= reminderTime &&
-            now < reminderTime + 60000 &&
-            !event.sentReminders.includes(
-              reminderId
-            )
+            now >= reminderTimestamp &&
+            now <
+              reminderTimestamp +
+              60000 &&
+            !sentReminders[
+              event.id
+            ].includes(reminderId)
           ) {
 
             try {
@@ -1248,9 +1460,10 @@
             }
 
 
-            event.sentReminders.push(
-              reminderId
-            );
+            sentReminders[
+              event.id
+            ].push(reminderId);
+
 
             changed = true;
 
@@ -1264,7 +1477,9 @@
 
     if (changed) {
 
-      saveEvents(events);
+      saveSentReminders(
+        sentReminders
+      );
 
     }
 
@@ -1396,7 +1611,7 @@
 
 
   /* =========================
-     モーダル背景クリックで閉じる
+     モーダル背景クリック
   ========================= */
 
   document
@@ -1442,26 +1657,42 @@
      初期化
   ========================= */
 
-  renderCalendar();
+  async function initialize() {
 
-  registerServiceWorker();
+    /*
+     * まずD1から予定を取得
+     */
 
-
-  /*
-   * 30秒ごとにリマインダーをチェック
-   */
-
-  setInterval(
-    checkReminders,
-    30000
-  );
+    await loadEvents();
 
 
-  /*
-   * 起動時にも一度チェック
-   */
+    /*
+     * Service Worker
+     */
 
-  checkReminders();
+    registerServiceWorker();
+
+
+    /*
+     * 起動時に一度チェック
+     */
+
+    checkReminders();
+
+
+    /*
+     * 30秒ごとにチェック
+     */
+
+    setInterval(
+      checkReminders,
+      30000
+    );
+
+  }
+
+
+  initialize();
 
 </script>
 
