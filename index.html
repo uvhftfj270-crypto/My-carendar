@@ -43,8 +43,6 @@
       font-size: 22px;
     }
 
-    /* 通知ボタン */
-
     #notificationButton {
       margin-top: 10px;
       padding: 10px 16px;
@@ -62,8 +60,6 @@
     #notificationButton:active {
       opacity: 0.7;
     }
-
-    /* カレンダー */
 
     .calendar {
       max-width: 600px;
@@ -161,8 +157,6 @@
     .stars {
       font-size: 10px;
     }
-
-    /* モーダル */
 
     #eventModal {
       display: none;
@@ -332,8 +326,6 @@
 </div>
 
 
-<!-- 予定編集モーダル -->
-
 <div id="eventModal">
 
   <div class="modal-content">
@@ -370,13 +362,9 @@
     <select id="eventPriority">
 
       <option value="1">⭐</option>
-
       <option value="2">⭐⭐</option>
-
       <option value="3">⭐⭐⭐</option>
-
       <option value="4">⭐⭐⭐⭐</option>
-
       <option value="5">⭐⭐⭐⭐⭐</option>
 
     </select>
@@ -421,10 +409,6 @@
 
   let editingEventId = null;
 
-  /*
-   * D1から取得したイベントを
-   * メモリ上に保持する
-   */
   let events = [];
 
 
@@ -591,8 +575,6 @@
         .getDate();
 
 
-    /* 空白 */
-
     for (
       let i = 0;
       i < firstDay;
@@ -608,8 +590,6 @@
 
     }
 
-
-    /* 日付 */
 
     for (
       let day = 1;
@@ -636,8 +616,6 @@
       cell.appendChild(dateNumber);
 
 
-      /* 今日 */
-
       const today =
         new Date();
 
@@ -651,8 +629,6 @@
 
       }
 
-
-      /* その日のイベント */
 
       const dateString =
         formatDate(year, month, day);
@@ -945,11 +921,6 @@
       event.name;
 
 
-    /*
-     * datetime-local用に
-     * YYYY-MM-DDTHH:MMへ戻す
-     */
-
     document.getElementById(
       "eventTime"
     ).value =
@@ -1014,18 +985,6 @@
     }
 
 
-    /*
-     * datetime-local
-     *
-     * 例：
-     * 2026-09-09T15:00
-     *
-     * ↓
-     *
-     * event_date = 2026-09-09
-     * event_time = 15:00
-     */
-
     let eventDate =
       selectedDate;
 
@@ -1078,10 +1037,6 @@
       let response;
 
 
-      /* =====================
-         編集
-      ===================== */
-
       if (
         editingEventId !== null
       ) {
@@ -1103,10 +1058,6 @@
           );
 
       }
-
-      /* =====================
-         新規追加
-      ===================== */
 
       else {
 
@@ -1145,13 +1096,7 @@
       }
 
 
-      /*
-       * D1から最新状態を
-       * 取り直す
-       */
-
       await loadEvents();
-
 
       closeModal();
 
@@ -1227,11 +1172,6 @@
       }
 
 
-      /*
-       * リマインダーの
-       * ローカル情報も削除
-       */
-
       const sentReminders =
         getSentReminders();
 
@@ -1245,7 +1185,6 @@
 
 
       await loadEvents();
-
 
       closeModal();
 
@@ -1295,9 +1234,25 @@
         permission === "granted"
       ) {
 
-        alert(
-          "通知が許可されました！"
+        /*
+         * Service Worker経由で
+         * テスト通知を表示
+         */
+
+        const registration =
+          await navigator.serviceWorker.ready;
+
+
+        await registration.showNotification(
+          "📅 カレンダー通知テスト",
+          {
+            body:
+              "通知が正常に動作しています！",
+            icon:
+              "./icon-192.png"
+          }
         );
+
 
       } else if (
         permission === "denied"
@@ -1317,10 +1272,14 @@
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        "通知テストエラー:",
+        error
+      );
 
       alert(
-        "通知の設定に失敗しました。"
+        "通知の設定に失敗しました。\n" +
+        error.message
       );
 
     }
@@ -1332,7 +1291,7 @@
      リマインダー通知
   ========================= */
 
-  function checkReminders() {
+  async function checkReminders() {
 
     if (
       !("Notification" in window)
@@ -1360,25 +1319,12 @@
     let changed = false;
 
 
-    events.forEach(event => {
+    for (const event of events) {
 
       if (!event.event_time) {
-        return;
+        continue;
       }
 
-
-      /*
-       * D1の
-       *
-       * event_date = 2026-09-09
-       * event_time = 15:00
-       *
-       * を
-       *
-       * 2026-09-09T15:00
-       *
-       * として扱う
-       */
 
       const eventDateTime =
         `${event.event_date}T${event.event_time}`;
@@ -1393,7 +1339,7 @@
       if (
         Number.isNaN(eventTimestamp)
       ) {
-        return;
+        continue;
       }
 
 
@@ -1411,53 +1357,51 @@
       }
 
 
-      reminders.forEach(
-        reminder => {
+      for (const reminder of reminders) {
 
-          const reminderTimestamp =
-            eventTimestamp -
-            reminder;
-
-
-          const reminderId =
-            `${event.event_date}_${event.event_time}_${reminder}`;
+        const reminderTimestamp =
+          eventTimestamp -
+          reminder;
 
 
-          /*
-           * 通知時間を過ぎていて、
-           * まだ通知していなければ通知
-           */
+        const reminderId =
+          `${event.event_date}_${event.event_time}_${reminder}`;
 
-          if (
-            now >= reminderTimestamp &&
-            now <
-              reminderTimestamp +
-              60000 &&
-            !sentReminders[
-              event.id
-            ].includes(reminderId)
-          ) {
 
-            try {
+        if (
+          now >= reminderTimestamp &&
+          now <
+            reminderTimestamp +
+            60000 &&
+          !sentReminders[
+            event.id
+          ].includes(reminderId)
+        ) {
 
-              new Notification(
-                `📅 ${event.name}`,
-                {
-                  body:
-                    "予定の時間が近づいています。",
-                  icon:
-                    "./icon-192.png"
-                }
-              );
+          try {
 
-            } catch (error) {
+            /*
+             * Service Worker経由で
+             * 通知を表示する
+             */
 
-              console.error(
-                "通知エラー:",
-                error
-              );
+            const registration =
+              await navigator.serviceWorker.ready;
 
-            }
+
+            await registration.showNotification(
+              `📅 ${event.name}`,
+              {
+                body:
+                  "予定の時間が近づいています。",
+
+                icon:
+                  "./icon-192.png",
+
+                tag:
+                  `calendar-${event.id}-${reminder}`
+              }
+            );
 
 
             sentReminders[
@@ -1467,12 +1411,27 @@
 
             changed = true;
 
+
+            console.log(
+              "リマインダー通知を送信しました:",
+              event.name
+            );
+
+
+          } catch (error) {
+
+            console.error(
+              "通知エラー:",
+              error
+            );
+
           }
 
         }
-      );
 
-    });
+      }
+
+    }
 
 
     if (changed) {
@@ -1500,7 +1459,7 @@
         "Service Worker非対応"
       );
 
-      return;
+      return null;
 
     }
 
@@ -1518,12 +1477,26 @@
         registration
       );
 
+
+      /*
+       * Service Workerが
+       * 使用可能になるまで待つ
+       */
+
+      await navigator.serviceWorker.ready;
+
+
+      return registration;
+
+
     } catch (error) {
 
       console.error(
         "Service Worker登録失敗",
         error
       );
+
+      return null;
 
     }
 
@@ -1667,17 +1640,17 @@
 
 
     /*
-     * Service Worker
+     * Service Worker登録
      */
 
-    registerServiceWorker();
+    await registerServiceWorker();
 
 
     /*
      * 起動時に一度チェック
      */
 
-    checkReminders();
+    await checkReminders();
 
 
     /*
